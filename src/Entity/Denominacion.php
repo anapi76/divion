@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\DenominacionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -42,6 +44,14 @@ class Denominacion
     #[ORM\ManyToOne(inversedBy: 'denominaciones')]
     #[ORM\JoinColumn(name: 'idRegion', referencedColumnName: 'idRegion',nullable: false)]
     private ?region $region = null;
+
+    #[ORM\OneToMany(targetEntity: Bodega::class, mappedBy: 'idDo')]
+    private Collection $bodegas;
+
+    public function __construct()
+    {
+        $this->bodegas = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -152,6 +162,36 @@ class Denominacion
     public function setRegion(?region $region): static
     {
         $this->region = $region;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Bodega>
+     */
+    public function getBodegas(): Collection
+    {
+        return $this->bodegas;
+    }
+
+    public function addBodega(Bodega $bodega): static
+    {
+        if (!$this->bodegas->contains($bodega)) {
+            $this->bodegas->add($bodega);
+            $bodega->setIdDo($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBodega(Bodega $bodega): static
+    {
+        if ($this->bodegas->removeElement($bodega)) {
+            // set the owning side to null (unless already changed)
+            if ($bodega->getIdDo() === $this) {
+                $bodega->setIdDo(null);
+            }
+        }
 
         return $this;
     }
