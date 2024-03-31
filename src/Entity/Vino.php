@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\VinoRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -21,7 +23,7 @@ class Vino
     #[ORM\Column(type: Types::TEXT)]
     private ?string $descripcion = null;
 
-    #[ORM\Column(name: 'notaCata',type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT)]
     private ?string $notaCata = null;
 
     #[ORM\Column(length: 50)]
@@ -58,6 +60,23 @@ class Vino
     #[ORM\ManyToOne(inversedBy: 'vinos')]
     #[ORM\JoinColumn(name: 'idBoca', referencedColumnName: 'idBoca',nullable: true)]
     private ?Boca $boca = null;
+
+    #[ORM\OneToMany(targetEntity: VinoUva::class, mappedBy: 'vino')]
+    private Collection $uvas;
+
+    #[ORM\OneToMany(targetEntity: VinoMaridaje::class, mappedBy: 'vino')]
+    private Collection $maridajes;
+
+    #[ORM\OneToMany(targetEntity: PuntuacionVino::class, mappedBy: 'vino')]
+    private Collection $puntuaciones;
+
+    public function __construct()
+    {
+        $this->uvas = new ArrayCollection();
+        $this->maridajes = new ArrayCollection();
+        $this->puntuaciones = new ArrayCollection();
+    }
+
 
     public function getId(): ?int
     {
@@ -204,6 +223,96 @@ class Vino
     public function setBoca(?Boca $boca): static
     {
         $this->boca = $boca;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, VinoUva>
+     */
+    public function getUvas(): Collection
+    {
+        return $this->uvas;
+    }
+
+    public function addUva(VinoUva $uva): static
+    {
+        if (!$this->uvas->contains($uva)) {
+            $this->uvas->add($uva);
+            $uva->setVino($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUva(VinoUva $uva): static
+    {
+        if ($this->uvas->removeElement($uva)) {
+            // set the owning side to null (unless already changed)
+            if ($uva->getVino() === $this) {
+                $uva->setVino(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, VinoMaridaje>
+     */
+    public function getMaridajes(): Collection
+    {
+        return $this->maridajes;
+    }
+
+    public function addMaridaje(VinoMaridaje $maridaje): static
+    {
+        if (!$this->maridajes->contains($maridaje)) {
+            $this->maridajes->add($maridaje);
+            $maridaje->setVino($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMaridaje(VinoMaridaje $maridaje): static
+    {
+        if ($this->maridajes->removeElement($maridaje)) {
+            // set the owning side to null (unless already changed)
+            if ($maridaje->getVino() === $this) {
+                $maridaje->setVino(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PuntuacionVino>
+     */
+    public function getPuntuaciones(): Collection
+    {
+        return $this->puntuaciones;
+    }
+
+    public function addPuntuacion(PuntuacionVino $puntuacion): static
+    {
+        if (!$this->puntuaciones->contains($puntuacion)) {
+            $this->puntuaciones->add($puntuacion);
+            $puntuacion->setVino($this);
+        }
+
+        return $this;
+    }
+
+    public function removePuntuacion(PuntuacionVino $puntuacion): static
+    {
+        if ($this->puntuaciones->removeElement($puntuacion)) {
+            // set the owning side to null (unless already changed)
+            if ($puntuacion->getVino() === $this) {
+                $puntuacion->setVino(null);
+            }
+        }
 
         return $this;
     }

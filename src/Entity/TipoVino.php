@@ -17,7 +17,7 @@ class TipoVino
     #[ORM\Column(name: 'idTipo')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 25)]
+    #[ORM\Column(length: 25,unique:true)]
     private ?string $nombre = null;
 
     #[ORM\Column(type: Types::TEXT)]

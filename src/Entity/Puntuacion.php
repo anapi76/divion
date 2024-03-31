@@ -2,28 +2,28 @@
 
 namespace App\Entity;
 
-use App\Repository\SaborRepository;
+use App\Repository\PuntuacionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: SaborRepository::class)]
-#[ORM\Table(name: 'sabor')]
-class Sabor
+#[ORM\Entity(repositoryClass: PuntuacionRepository::class)]
+#[ORM\Table(name: 'puntuacion')]
+class Puntuacion
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'idSabor')]
+    #[ORM\Column(name: 'idPuntuacion')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 15, unique: true)]
-    private ?string $nombre = null;
+    #[ORM\Column(unique: true)]
+    private ?int $puntos = null;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $descripcion = null;
 
-    #[ORM\OneToMany(targetEntity: Vino::class, mappedBy: 'sabor')]
+    #[ORM\OneToMany(targetEntity: PuntuacionVino::class, mappedBy: 'puntuacion')]
     private Collection $vinos;
 
     public function __construct()
@@ -36,14 +36,14 @@ class Sabor
         return $this->id;
     }
 
-    public function getNombre(): ?string
+    public function getPuntos(): ?int
     {
-        return $this->nombre;
+        return $this->puntos;
     }
 
-    public function setNombre(string $nombre): static
+    public function setPuntos(?int $puntos): static
     {
-        $this->nombre = $nombre;
+        $this->puntos = $puntos;
 
         return $this;
     }
@@ -61,29 +61,29 @@ class Sabor
     }
 
     /**
-     * @return Collection<int, Vino>
+     * @return Collection<int, PuntuacionVino>
      */
     public function getVinos(): Collection
     {
         return $this->vinos;
     }
 
-    public function addVino(Vino $vino): static
+    public function addVino(PuntuacionVino $vino): static
     {
         if (!$this->vinos->contains($vino)) {
             $this->vinos->add($vino);
-            $vino->setSabor($this);
+            $vino->setPuntuacion($this);
         }
 
         return $this;
     }
 
-    public function removeVino(Vino $vino): static
+    public function removeVino(PuntuacionVino $vino): static
     {
         if ($this->vinos->removeElement($vino)) {
             // set the owning side to null (unless already changed)
-            if ($vino->getSabor() === $this) {
-                $vino->setSabor(null);
+            if ($vino->getPuntuacion() === $this) {
+                $vino->setPuntuacion(null);
             }
         }
 

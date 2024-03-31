@@ -9,14 +9,15 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BocaRepository::class)]
+#[ORM\Table(name: 'boca')]
 class Boca
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'idBoca')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 15)]
+    #[ORM\Column(length: 15, unique: true)]
     private ?string $nombre = null;
 
     #[ORM\Column(type: Types::TEXT)]

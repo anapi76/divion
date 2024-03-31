@@ -8,12 +8,12 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BodegaRepository::class)]
-#[ORM\Table(name: 'comandas')]
+#[ORM\Table(name: 'bodega')]
 class Bodega
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'idComanda')]
+    #[ORM\Column(name: 'idBodega')]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
@@ -42,7 +42,7 @@ class Bodega
 
     #[ORM\ManyToOne(inversedBy: 'bodegas')]
     #[ORM\JoinColumn(name: 'idDo', referencedColumnName: 'idDo',nullable: false)]
-    private ?Denominacion $idDo = null;
+    private ?Denominacion $denominacion = null;
 
     #[ORM\OneToMany(targetEntity: Vino::class, mappedBy: 'bodega')]
     private Collection $vinos;
@@ -153,14 +153,14 @@ class Bodega
         return $this;
     }
 
-    public function getIdDo(): ?Denominacion
+    public function getDenominacion(): ?Denominacion
     {
-        return $this->idDo;
+        return $this->denominacion;
     }
 
-    public function setIdDo(?Denominacion $idDo): static
+    public function setDenominaicion(?Denominacion $denominacion): static
     {
-        $this->idDo = $idDo;
+        $this->denominacion = $denominacion;
 
         return $this;
     }

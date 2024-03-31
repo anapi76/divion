@@ -2,24 +2,24 @@
 
 namespace App\Entity;
 
-use App\Repository\ColorRepository;
+use App\Repository\MaridajeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ColorRepository::class)]
-#[ORM\Table(name: 'color')]
-class Color
+#[ORM\Entity(repositoryClass: MaridajeRepository::class)]
+#[ORM\Table(name: 'maridaje')]
+class Maridaje
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'idColor')]
+    #[ORM\Column(name: 'idMaridaje')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 25)]
+    #[ORM\Column(length: 50,unique:true)]
     private ?string $nombre = null;
 
-    #[ORM\OneToMany(targetEntity: Vino::class, mappedBy: 'color')]
+    #[ORM\OneToMany(targetEntity: VinoMaridaje::class, mappedBy: 'maridaje')]
     private Collection $vinos;
 
     public function __construct()
@@ -45,29 +45,29 @@ class Color
     }
 
     /**
-     * @return Collection<int, Vino>
+     * @return Collection<int, VinoMaridaje>
      */
     public function getVinos(): Collection
     {
         return $this->vinos;
     }
 
-    public function addVino(Vino $vino): static
+    public function addVino(VinoMaridaje $vino): static
     {
         if (!$this->vinos->contains($vino)) {
             $this->vinos->add($vino);
-            $vino->setColor($this);
+            $vino->setMaridaje($this);
         }
 
         return $this;
     }
 
-    public function removeVino(Vino $vino): static
+    public function removeVino(VinoMaridaje $vino): static
     {
         if ($this->vinos->removeElement($vino)) {
             // set the owning side to null (unless already changed)
-            if ($vino->getColor() === $this) {
-                $vino->setColor(null);
+            if ($vino->getMaridaje() === $this) {
+                $vino->setMaridaje(null);
             }
         }
 

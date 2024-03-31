@@ -39,18 +39,23 @@ class Denominacion
     private ?string $descripcion = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $vinos = null;
+    private ?string $tipoVinos = null;
 
     #[ORM\ManyToOne(inversedBy: 'denominaciones')]
     #[ORM\JoinColumn(name: 'idRegion', referencedColumnName: 'idRegion',nullable: false)]
     private ?region $region = null;
 
-    #[ORM\OneToMany(targetEntity: Bodega::class, mappedBy: 'idDo')]
+    #[ORM\OneToMany(targetEntity: Bodega::class, mappedBy: 'denominacion')]
     private Collection $bodegas;
+
+    #[ORM\OneToMany(targetEntity: UvaDo::class, mappedBy: 'denominacion')]
+    private Collection $uvas;
+
 
     public function __construct()
     {
         $this->bodegas = new ArrayCollection();
+        $this->uvas = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -142,14 +147,14 @@ class Denominacion
         return $this;
     }
 
-    public function getVinos(): ?string
+    public function getTipoVinos(): ?string
     {
-        return $this->vinos;
+        return $this->tipoVinos;
     }
 
-    public function setVinos(string $vinos): static
+    public function setTipoVinos(string $tipoVinos): static
     {
-        $this->vinos = $vinos;
+        $this->tipoVinos = $tipoVinos;
 
         return $this;
     }
@@ -195,4 +200,35 @@ class Denominacion
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, UvaDo>
+     */
+    public function getUvas(): Collection
+    {
+        return $this->uvas;
+    }
+
+    public function addUva(UvaDo $uva): static
+    {
+        if (!$this->uvas->contains($uva)) {
+            $this->uvas->add($uva);
+            $uva->setDenominacion($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUva(UvaDo $uva): static
+    {
+        if ($this->uvas->removeElement($uva)) {
+            // set the owning side to null (unless already changed)
+            if ($uva->getDenominacion() === $this) {
+                $uva->setDenominacion(null);
+            }
+        }
+
+        return $this;
+    }
+
 }

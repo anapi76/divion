@@ -73,4 +73,26 @@ class Region
 
         return $this;
     }
+
+    public function addDenominacione(Denominacion $denominacione): static
+    {
+        if (!$this->denominaciones->contains($denominacione)) {
+            $this->denominaciones->add($denominacione);
+            $denominacione->setRegion($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDenominacione(Denominacion $denominacione): static
+    {
+        if ($this->denominaciones->removeElement($denominacione)) {
+            // set the owning side to null (unless already changed)
+            if ($denominacione->getRegion() === $this) {
+                $denominacione->setRegion(null);
+            }
+        }
+
+        return $this;
+    }
 }

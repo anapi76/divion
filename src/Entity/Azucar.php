@@ -8,14 +8,15 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AzucarRepository::class)]
+#[ORM\Table(name: 'azucar')]
 class Azucar
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'idAzucar')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 25)]
+    #[ORM\Column(length: 25, unique: true)]
     private ?string $nombre = null;
 
     #[ORM\Column(length: 25)]

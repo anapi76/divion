@@ -19,7 +19,7 @@ class Maduracion
     #[ORM\Column(length: 30)]
     private ?string $nombre = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, nullable: true)]
     private ?string $descripcion = null;
 
     #[ORM\OneToMany(targetEntity: Vino::class, mappedBy: 'maduracion')]
