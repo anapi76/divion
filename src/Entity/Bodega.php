@@ -158,7 +158,7 @@ class Bodega
         return $this->denominacion;
     }
 
-    public function setDenominaicion(?Denominacion $denominacion): static
+    public function setDenominacion(?Denominacion $denominacion): static
     {
         $this->denominacion = $denominacion;
 

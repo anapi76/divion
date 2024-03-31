@@ -43,7 +43,7 @@ class Denominacion
 
     #[ORM\ManyToOne(inversedBy: 'denominaciones')]
     #[ORM\JoinColumn(name: 'idRegion', referencedColumnName: 'idRegion',nullable: false)]
-    private ?region $region = null;
+    private ?Region $region = null;
 
     #[ORM\OneToMany(targetEntity: Bodega::class, mappedBy: 'denominacion')]
     private Collection $bodegas;
@@ -183,7 +183,7 @@ class Denominacion
     {
         if (!$this->bodegas->contains($bodega)) {
             $this->bodegas->add($bodega);
-            $bodega->setIdDo($this);
+            $bodega->setDenominacion($this);
         }
 
         return $this;
@@ -193,8 +193,8 @@ class Denominacion
     {
         if ($this->bodegas->removeElement($bodega)) {
             // set the owning side to null (unless already changed)
-            if ($bodega->getIdDo() === $this) {
-                $bodega->setIdDo(null);
+            if ($bodega->getDenominacion() === $this) {
+                $bodega->setDenominacion(null);
             }
         }
 
