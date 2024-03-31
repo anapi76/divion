@@ -38,7 +38,7 @@ class Denominacion
     #[ORM\Column(type: Types::TEXT)]
     private ?string $descripcion = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(name:'tipoVinos', type: Types::TEXT)]
     private ?string $tipoVinos = null;
 
     #[ORM\ManyToOne(inversedBy: 'denominaciones')]

@@ -23,7 +23,7 @@ class Vino
     #[ORM\Column(type: Types::TEXT)]
     private ?string $descripcion = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(name:'notaCata',type: Types::TEXT)]
     private ?string $notaCata = null;
 
     #[ORM\Column(length: 50)]
