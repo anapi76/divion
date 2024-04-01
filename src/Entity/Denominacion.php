@@ -21,7 +21,7 @@ class Denominacion
     private ?string $nombre = null;
 
     #[ORM\Column(options: ['default' => false])]
-    private ?bool $certificada = false;
+    private ?bool $calificada = false;
 
     #[ORM\Column(nullable: true)]
     private ?int $creacion = null;
@@ -75,14 +75,14 @@ class Denominacion
         return $this;
     }
 
-    public function isCertificada(): ?bool
+    public function isCalificada(): ?bool
     {
-        return $this->certificada;
+        return $this->calificada;
     }
 
-    public function setCertificada(bool $certificada): static
+    public function setCalificada(bool $calificada): static
     {
-        $this->certificada = $certificada;
+        $this->calificada = $calificada;
 
         return $this;
     }

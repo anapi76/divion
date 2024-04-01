@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Denominacion;
+use App\Entity\Region;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Persistence\ManagerRegistry;
@@ -30,17 +31,17 @@ class DenominacionRepository extends ServiceEntityRepository
         } else {
             $json = array();
             foreach ($denominaciones as $denominacion) {
-                $certificada = ($denominacion->isCertificada()) ? 'Denominación de origen calificada' : '';
+                $calificada = ($denominacion->isCalificada()) ? 'Denominación de origen calificada' : '';
                 $json[] = array(
                     'id' => $denominacion->getId(),
                     'nombre' => $denominacion->getNombre(),
-                    'calificada' => $certificada,
+                    'calificada' => $calificada,
                     'creacion' => $denominacion->getCreacion(),
                     'web' => $denominacion->getWeb(),
                     'imagen' => $denominacion->getImagen(),
                     'historia' => $denominacion->getHistoria(),
                     'descripcion' => $denominacion->getDescripcion(),
-                    'vinos' => $denominacion->getTipoVinos(),
+                    'tipo_vinos' => $denominacion->getTipoVinos(),
                     'region' => $denominacion->getRegion()->getNombre(),
                     'bodegas' => $this->bodegasJSON($denominacion->getBodegas()),
                     'uvas_permitidas' => $this->uvasJSON($denominacion->getUvas()),
@@ -53,11 +54,11 @@ class DenominacionRepository extends ServiceEntityRepository
     public function denominacionJSON(Denominacion $denominacion): mixed
     {
         $json = array();
-        $certificada = ($denominacion->isCertificada()) ? 'Denominación de origen calificada' : '';
+        $calificada = ($denominacion->isCalificada()) ? 'Denominación de origen calificada' : '';
         $json[] = array(
             'id' => $denominacion->getId(),
             'nombre' => $denominacion->getNombre(),
-            'calificada' => $certificada,
+            'calificada' => $calificada,
             'creacion' => $denominacion->getCreacion(),
             'web' => $denominacion->getWeb(),
             'imagen' => $denominacion->getImagen(),
@@ -87,6 +88,52 @@ class DenominacionRepository extends ServiceEntityRepository
             $json[] = $uva->getUva()->getNombre();
         }
         return $json;
+    }
+
+    public function new(string $nombre, bool $calificada, ?int $creacion, ?string $web, string $imagen, string $historia, string $descripcion, string $tipoVinos, Region $region, bool $flush): void
+    {
+        try {
+            $denominacion = new Denominacion();
+            $denominacion->setNombre($nombre);
+            $denominacion->setCalificada($calificada);
+            if (!is_null($creacion)) $denominacion->setCreacion($creacion);
+            if (!is_null($web)) $denominacion->setWeb($web);
+            $denominacion->setImagen($imagen);
+            $denominacion->setHistoria($historia);
+            $denominacion->setDescripcion($descripcion);
+            $denominacion->setTipoVinos($tipoVinos);
+            $denominacion->setRegion($region);
+            $this->save($denominacion, $flush);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function save(Denominacion $denominacion, bool $flush = false): void
+    {
+        try {
+            $this->getEntityManager()->persist($denominacion);
+            if ($flush) {
+                $this->getEntityManager()->flush();
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    //método para comprobar si se ha insertado el proveedor
+    public function testInsert(string $nombre): bool
+    {
+        if (empty($nombre) || is_null($nombre)) {
+            return false;
+        } else {
+            $entidad = $this->findOneBy(['nombre' => $nombre]);
+            if (empty($entidad))
+                return false;
+            else {
+                return true;
+            }
+        }
     }
 
     //    /**
