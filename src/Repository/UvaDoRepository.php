@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Denominacion;
 use App\Entity\UvaDo;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -16,9 +17,36 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class UvaDoRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private UvaRepository $uvaRepository;
+
+    public function __construct(ManagerRegistry $registry, UvaRepository $uvaRepository)
     {
         parent::__construct($registry, UvaDo::class);
+        $this->uvaRepository = $uvaRepository;
+    }
+
+    public function new(array $tiposUva, Denominacion $denominacion): void
+    {
+        foreach ($tiposUva as $uvaId) {
+            $uvaDo = new UvaDo();
+            $uvaDo->setDenominacion($denominacion);
+            $uva = $this->uvaRepository->find($uvaId);
+            $uvaDo->setUva($uva);
+            $denominacion->addUva($uvaDo);
+            $this->getEntityManager()->persist($uvaDo);
+        }
+    }
+
+    public function remove(UvaDo $uvaDo, bool $flush = false): void
+    {
+        try {
+            $this->getEntityManager()->remove($uvaDo);
+            if ($flush) {
+                $this->getEntityManager()->flush();
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     //    /**
