@@ -30,7 +30,7 @@ class DenominacionController extends AbstractController
     #[Route('/denominacion', name: 'app_denominacion_all', methods: ['GET'])]
     public function showAll(): JsonResponse
     {
-        $denominaciones = $this->denominacionRepository->denominacionesJSON();
+        $denominaciones = $this->denominacionRepository->findAllDenominaciones();
         if (is_null($denominaciones)) {
             return new JsonResponse(['status' => 'No existen denominaciones en la bd'], Response::HTTP_NOT_FOUND);
         }
@@ -43,7 +43,7 @@ class DenominacionController extends AbstractController
         if (is_null($denominacion)) {
             return new JsonResponse(['status' => 'La denominación de origen no existe en la bd'], Response::HTTP_NOT_FOUND);
         }
-        $denominacionJson = $this->denominacionRepository->denominacionJSON($denominacion);
+        $denominacionJson = $this->denominacionRepository->findDenominacion($denominacion);
         return new JsonResponse($denominacionJson, Response::HTTP_OK);
     }
 
@@ -103,7 +103,9 @@ class DenominacionController extends AbstractController
             $descripcion = (isset($data->descripcion) && !empty($data->descripcion)) ? $data->descripcion : null;
             $tipoVinos = (isset($data->tipo_vinos) && !empty($data->tipo_vinos)) ? $data->tipo_vinos : null;
             $tiposUva = (isset($data->tipos_uva) && !empty($data->tipos_uva)) ? $data->tipos_uva : null;
-            $this->denominacionRepository->update($denominacion, $calificada, $web, $imagen, $historia, $descripcion, $tipoVinos, $tiposUva, true);
+            if(!$this->denominacionRepository->update($denominacion, $calificada, $web, $imagen, $historia, $descripcion, $tipoVinos, $tiposUva, true)){
+                return new JsonResponse(['status' => 'La denominación de origen no se ha actualizado'], Response::HTTP_BAD_REQUEST);
+            }
             return new JsonResponse(['status' => 'Denominación de origen actualizada correctamente'], Response::HTTP_OK);
         } catch (Exception $e) {
             $msg = 'Error del servidor: ' . $e->getMessage();
