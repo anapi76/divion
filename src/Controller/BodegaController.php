@@ -56,10 +56,10 @@ class BodegaController extends AbstractController
                 return new JsonResponse(['status' => 'Faltan parámetros'], Response::HTTP_BAD_REQUEST);
             }
             $bodega = $this->bodegaRepository->findOneBy(['nombre' => $data->nombre]);
-            if (!is_null($bodega)) {
+            if (is_null($bodega)) {
                 return new JsonResponse(['status' => 'El nombre ya existe en la bd'], Response::HTTP_BAD_REQUEST);
             }
-            $denominacion = $this->denominacionRepository->findOneBy(['nombre' => $data->denominacion]);
+            $denominacion = $this->denominacionRepository->find($data->denominacion);
             if (is_null($denominacion)) {
                 return new JsonResponse(['status' => 'La denominación de origen no existe existe en la bd o el nombre es incorrecto'], Response::HTTP_BAD_REQUEST);
             }

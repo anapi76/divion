@@ -23,24 +23,6 @@ class BodegaRepository extends ServiceEntityRepository
         parent::__construct($registry, Bodega::class);
     }
 
-    public function bodegasJSON(Bodega $bodega): mixed
-    {
-        $json = array(
-            'id' => $bodega->getId(),
-            'nombre' => $bodega->getNombre(),
-            'direccion' => $bodega->getDireccion(),
-            'poblacion' => $bodega->getPoblacion(),
-            'provincia' => $bodega->getProvincia(),
-            'cod_postal' => $bodega->getCodPostal(),
-            'email' => $bodega->getEmail(),
-            'telefono' => $bodega->getTelefono(),
-            'web' => $bodega->getWeb(),
-            'bodega' => $bodega->getDenominacion()->getNombre()
-        );
-
-        return $json;
-    }
-
     public function findAllBodegas(): mixed
     {
         $bodegas = $this->findAll();
@@ -63,6 +45,25 @@ class BodegaRepository extends ServiceEntityRepository
         return $json;
     }
 
+    public function bodegasJSON(Bodega $bodega): mixed
+    {
+        $json = array(
+            'id' => $bodega->getId(),
+            'nombre' => $bodega->getNombre(),
+            'direccion' => $bodega->getDireccion(),
+            'poblacion' => $bodega->getPoblacion(),
+            'provincia' => $bodega->getProvincia(),
+            'cod_postal' => $bodega->getCodPostal(),
+            'email' => $bodega->getEmail(),
+            'telefono' => $bodega->getTelefono(),
+            'web' => $bodega->getWeb(),
+            'bodega' => $bodega->getDenominacion()->getNombre(),
+            'vinos'=>$this->vinosJSON($bodega->getVinos())
+        );
+
+        return $json;
+    }
+
     public function vinosJSON(Collection $vinos): mixed
     {
         $json = array();
@@ -72,7 +73,7 @@ class BodegaRepository extends ServiceEntityRepository
         return $json;
     }
 
-    public function new(string $nombre,string $direccion, ?string $poblacion, string $provincia, ?string $codPostal, ?string $email, ?string $telefono, ?string $web, Denominacion $denominacion, bool $flush): void
+    public function new(string $nombre,string $direccion, string $poblacion, string $provincia, ?string $codPostal, ?string $email, ?string $telefono, ?string $web, Denominacion $denominacion, bool $flush): void
     {
         try {
             $bodega = new Bodega();

@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Vino;
 use App\Entity\VinoMaridaje;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -16,9 +17,36 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class VinoMaridajeRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private MaridajeRepository $maridajeRepository;
+    
+    public function __construct(ManagerRegistry $registry, MaridajeRepository $maridajeRepository)
     {
         parent::__construct($registry, VinoMaridaje::class);
+        $this->maridajeRepository = $maridajeRepository;
+    }
+
+    public function new(array $maridajes, Vino $vino): void
+    {
+        foreach ($maridajes as $maridajeId) {
+            $maridaje = $this->maridajeRepository->find($maridajeId);
+            $vinoMaridaje = new VinoMaridaje();
+            $vinoMaridaje->setVino($vino);
+            $vinoMaridaje->setMaridaje($maridaje);
+            $this->getEntityManager()->persist($vinoMaridaje);
+            $vino->addMaridaje($vinoMaridaje);
+        }
+    }
+
+    public function save(VinoMaridaje $vinoMaridaje, bool $flush = false): void
+    {
+        try {
+            $this->getEntityManager()->persist($vinoMaridaje);
+            if ($flush) {
+                $this->getEntityManager()->flush();
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     //    /**

@@ -25,9 +25,9 @@ class UvaDoRepository extends ServiceEntityRepository
         $this->uvaRepository = $uvaRepository;
     }
 
-    public function new(array $tiposUva, Denominacion $denominacion): void
+    public function new(array $uvas, Denominacion $denominacion): void
     {
-        foreach ($tiposUva as $uvaId) {
+        foreach ($uvas as $uvaId) {
             $uvaDo = new UvaDo();
             $uvaDo->setDenominacion($denominacion);
             $uva = $this->uvaRepository->find($uvaId);

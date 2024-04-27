@@ -55,14 +55,14 @@ class DenominacionController extends AbstractController
             if (is_null($data)) {
                 return new JsonResponse(['status' => 'Error al decodificar el archivo json'], Response::HTTP_BAD_REQUEST);
             }
-            if (!isset($data->nombre) || empty($data->nombre) || !isset($data->imagen) || empty($data->imagen) || !isset($data->historia) || empty($data->historia) || !isset($data->descripcion) || empty($data->descripcion) || !isset($data->tipo_vinos) || empty($data->tipo_vinos) || !isset($data->region) || empty($data->region)) {
+            if (!isset($data->nombre) || empty($data->nombre) || !isset($data->imagen) || empty($data->imagen) || !isset($data->historia) || empty($data->historia) || !isset($data->descripcion) || empty($data->descripcion) || !isset($data->tipoVinos) || empty($data->tipoVinos) || !isset($data->region) || empty($data->region)) {
                 return new JsonResponse(['status' => 'Faltan parámetros'], Response::HTTP_BAD_REQUEST);
             }
             $denominacion = $this->denominacionRepository->findOneBy(['nombre' => $data->nombre]);
-            if (!is_null($denominacion)) {
+            if (is_null($denominacion)) {
                 return new JsonResponse(['status' => 'El nombre ya existe en la bd'], Response::HTTP_BAD_REQUEST);
             }
-            $region = $this->regionRepository->findOneBy(['nombre' => $data->region]);
+            $region = $this->regionRepository->find($data->region);
             if (is_null($region)) {
                 return new JsonResponse(['status' => 'La región no existe existe en la bd o el nombre es incorrecto'], Response::HTTP_BAD_REQUEST);
             }
@@ -72,9 +72,9 @@ class DenominacionController extends AbstractController
                 return new JsonResponse(['status' => 'Año de creación incorrecto'], Response::HTTP_BAD_REQUEST);
             }
             $web = (isset($data->web) && !empty($data->web)) ? $data->web : null;
-            $tiposUva = (isset($data->tipos_uva) && !empty($data->tipos_uva)) ? $data->tipos_uva : null;
+            $uvas = (isset($data->uvas) && !empty($data->uvas)) ? $data->uvas : null;
 
-            $this->denominacionRepository->new($data->nombre, $calificada, $creacion, $web, $data->imagen, $data->historia, $data->descripcion, $data->tipo_vinos, $region, $tiposUva, true);
+            $this->denominacionRepository->new($data->nombre, $calificada, $creacion, $web, $data->imagen, $data->historia, $data->descripcion, $data->tipo_vinos, $region, $uvas, true);
             if (!$this->denominacionRepository->testInsert($data->nombre)) {
                 return new JsonResponse(['status' => 'La inserción de la denominación de origen falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
@@ -140,7 +140,6 @@ class DenominacionController extends AbstractController
             return new JsonResponse(['status' => $msg], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
 
     public function validateCreacion(int $creacion): bool
     {

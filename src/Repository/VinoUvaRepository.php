@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Vino;
 use App\Entity\VinoUva;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -16,33 +17,60 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class VinoUvaRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private UvaRepository $uvaRepository;
+    
+    public function __construct(ManagerRegistry $registry, UvaRepository $uvaRepository)
     {
         parent::__construct($registry, VinoUva::class);
+        $this->uvaRepository = $uvaRepository;
     }
 
-//    /**
-//     * @return VinoUva[] Returns an array of VinoUva objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('v')
-//            ->andWhere('v.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('v.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function new(array $uvas, Vino $vino): void
+    {
+        foreach ($uvas as $uvaId) {
+            $uva = $this->uvaRepository->find($uvaId);
+            $vinoUva = new VinoUva();
+            $vinoUva->setVino($vino);
+            $vinoUva->setUva($uva);
+            $this->getEntityManager()->persist($vinoUva);
+            $vino->addUva($vinoUva);
+        }
+    }
 
-//    public function findOneBySomeField($value): ?VinoUva
-//    {
-//        return $this->createQueryBuilder('v')
-//            ->andWhere('v.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    public function save(VinoUva $vinoUva, bool $flush = false): void
+    {
+        try {
+            $this->getEntityManager()->persist($vinoUva);
+            if ($flush) {
+                $this->getEntityManager()->flush();
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    //    /**
+    //     * @return VinoUva[] Returns an array of VinoUva objects
+    //     */
+    //    public function findByExampleField($value): array
+    //    {
+    //        return $this->createQueryBuilder('v')
+    //            ->andWhere('v.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->orderBy('v.id', 'ASC')
+    //            ->setMaxResults(10)
+    //            ->getQuery()
+    //            ->getResult()
+    //        ;
+    //    }
+
+    //    public function findOneBySomeField($value): ?VinoUva
+    //    {
+    //        return $this->createQueryBuilder('v')
+    //            ->andWhere('v.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->getQuery()
+    //            ->getOneOrNullResult()
+    //        ;
+    //    }
 }
