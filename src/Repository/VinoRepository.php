@@ -8,15 +8,14 @@ use App\Entity\Bodega;
 use App\Entity\Color;
 use App\Entity\Cuerpo;
 use App\Entity\Maduracion;
-use App\Entity\Maridaje;
 use App\Entity\Sabor;
 use App\Entity\TipoVino;
 use App\Entity\Vino;
-use App\Entity\VinoMaridaje;
-use App\Entity\VinoUva;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @extends ServiceEntityRepository<Vino>
@@ -31,13 +30,23 @@ class VinoRepository extends ServiceEntityRepository
 
     private VinoMaridajeRepository $vinoMaridajeRepository;
     private VinoUvaRepository $vinoUvaRepository;
+    private MaduracionRepository $maduracionRepository;
+    private SaborRepository $saborRepository;
+    private BocaRepository $bocaRepository;
+    private CuerpoRepository $cuerpoRepository;
+    private AzucarRepository $azucarRepository;
 
 
-    public function __construct(ManagerRegistry $registry, VinoUvaRepository $vinoUvaRepository, VinoMaridajeRepository $vinoMaridajeRepository)
+    public function __construct(ManagerRegistry $registry, VinoUvaRepository $vinoUvaRepository, VinoMaridajeRepository $vinoMaridajeRepository, MaduracionRepository $maduracionRepository, SaborRepository $saborRepository, BocaRepository $bocaRepository, CuerpoRepository $cuerpoRepository, AzucarRepository $azucarRepository)
     {
         parent::__construct($registry, Vino::class);
         $this->vinoUvaRepository = $vinoUvaRepository;
         $this->vinoMaridajeRepository = $vinoMaridajeRepository;
+        $this->maduracionRepository = $maduracionRepository;
+        $this->saborRepository = $saborRepository;
+        $this->bocaRepository = $bocaRepository;
+        $this->cuerpoRepository = $cuerpoRepository;
+        $this->azucarRepository = $azucarRepository;
     }
 
     public function findAllVinos(): mixed
@@ -62,12 +71,12 @@ class VinoRepository extends ServiceEntityRepository
         return $json;
     }
 
-    public function new(string $nombre, string $descripicion, string $notaCata, string $imagen, Color $color, ?Azucar $azucar, TipoVino $tipoVino, ?Maduracion $maduracion, Bodega $bodega, ?Sabor $sabor, ?Cuerpo $cuerpo, ?Boca $boca, array $uvas, array $maridajes, bool $flush): void
+    public function new(string $nombre, string $descripcion, string $notaCata, string $imagen, Color $color, ?Azucar $azucar, TipoVino $tipoVino, ?Maduracion $maduracion, Bodega $bodega, ?Sabor $sabor, ?Cuerpo $cuerpo, ?Boca $boca, array $uvas, array $maridajes, bool $flush): void
     {
         try {
             $vino = new Vino();
             $vino->setNombre($nombre);
-            $vino->setDescripcion($descripicion);
+            $vino->setDescripcion($descripcion);
             $vino->setNotaCata($notaCata);
             $vino->setImagen($imagen);
             $vino->setColor($color);
@@ -86,6 +95,38 @@ class VinoRepository extends ServiceEntityRepository
             throw $e;
         }
     }
+
+    public function update(Vino $vino, ?string $descripcion, ?string $notaCata, ?string $imagen, ?array $uvas, ?array $maridajes, bool $flush): bool
+    {
+        try {
+            $update = false;
+            if (!is_null($descripcion)) {
+                $vino->setDescripcion($descripcion);
+                $update = true;
+            }
+            if (!is_null($notaCata)) {
+                $vino->setNotaCata($notaCata);
+                $update = true;
+            }
+            if (!is_null($imagen)) {
+                $vino->setImagen($imagen);
+                $update = true;
+            }
+            if (!is_null($uvas)) {
+                $this->vinoUvaRepository->new($uvas, $vino);
+                $update = true;
+            }
+            if (!is_null($maridajes)) {
+                $this->vinoUvaRepository->new($maridajes, $vino);
+                $update = true;
+            }
+            $this->save($vino, $flush);
+            return $update;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
 
     public function vinosJSON(Vino $vino): mixed
     {
@@ -165,6 +206,51 @@ class VinoRepository extends ServiceEntityRepository
         else {
             return true;
         }
+    }
+
+    public function validateMaduracion(int $maduracionId): mixed
+    {
+        $maduracion = $this->maduracionRepository->find($maduracionId);
+        if (is_null($maduracion)) {
+            return new JsonResponse(['status' => 'La maduración no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
+        }
+        return $maduracion;
+    }
+
+    public function validateAzucar(int $azucarId): mixed
+    {
+        $azucar = $this->azucarRepository->find($azucarId);
+        if (is_null($azucar)) {
+            return new JsonResponse(['status' => 'El azúcar no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
+        }
+        return $azucar;
+    }
+
+    public function validateSabor(int $saborId): mixed
+    {
+        $sabor = $this->saborRepository->find($saborId);
+        if (is_null($sabor)) {
+            return new JsonResponse(['status' => 'El sabor no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
+        }
+        return $sabor;
+    }
+
+    public function validateCuerpo(int $cuerpoId): mixed
+    {
+        $cuerpo = $this->cuerpoRepository->find($cuerpoId);
+        if (is_null($cuerpo)) {
+            return new JsonResponse(['status' => 'El cuerpo no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
+        }
+        return $cuerpo;
+    }
+
+    public function validateBoca(int $bocaId): mixed
+    {
+        $boca = $this->bocaRepository->find($bocaId);
+        if (is_null($boca)) {
+            return new JsonResponse(['status' => 'La boca no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
+        }
+        return $boca;
     }
 
     //    /**

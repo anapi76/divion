@@ -38,8 +38,8 @@ class Denominacion
     #[ORM\Column(type: Types::TEXT)]
     private ?string $descripcion = null;
 
-    #[ORM\Column(name:'tipoVinos', type: Types::TEXT)]
-    private ?string $tipoVinos = null;
+    #[ORM\Column(name:'descripcionVinos', type: Types::TEXT)]
+    private ?string $descripcionVinos = null;
 
     #[ORM\ManyToOne(inversedBy: 'denominaciones')]
     #[ORM\JoinColumn(name: 'idRegion', referencedColumnName: 'idRegion',nullable: false)]
@@ -147,14 +147,14 @@ class Denominacion
         return $this;
     }
 
-    public function getTipoVinos(): ?string
+    public function getDescripcionVinos(): ?string
     {
-        return $this->tipoVinos;
+        return $this->descripcionVinos;
     }
 
-    public function setTipoVinos(string $tipoVinos): static
+    public function setDescripcionVinos(string $descripcionVinos): static
     {
-        $this->tipoVinos = $tipoVinos;
+        $this->descripcionVinos = $descripcionVinos;
 
         return $this;
     }

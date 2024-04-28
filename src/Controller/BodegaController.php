@@ -18,10 +18,10 @@ class BodegaController extends AbstractController
     private BodegaRepository $bodegaRepository;
     private DenominacionRepository $denominacionRepository;
 
-    public function __construct(BodegaRepository $bodegaRepository,DenominacionRepository $denominacionRepository)
+    public function __construct(BodegaRepository $bodegaRepository, DenominacionRepository $denominacionRepository)
     {
         $this->bodegaRepository = $bodegaRepository;
-        $this->denominacionRepository=$denominacionRepository;
+        $this->denominacionRepository = $denominacionRepository;
     }
 
     #[Route('/bodega', name: 'app_bodega_all', methods: ['GET'])]
@@ -52,24 +52,24 @@ class BodegaController extends AbstractController
             if (is_null($data)) {
                 return new JsonResponse(['status' => 'Error al decodificar el archivo json'], Response::HTTP_BAD_REQUEST);
             }
-            if (!isset($data->nombre) || empty($data->nombre) ||!isset($data->direccion) || empty($data->direccion) || !isset($data->provincia) || empty($data->provincia) || !isset($data->denominacion) || empty($data->denominacion)) {
+            if (!isset($data->nombre) || empty($data->nombre) || !isset($data->direccion) || empty($data->direccion) || !isset($data->provincia) || empty($data->provincia) || !isset($data->denominacion) || empty($data->denominacion)) {
                 return new JsonResponse(['status' => 'Faltan parámetros'], Response::HTTP_BAD_REQUEST);
             }
             $bodega = $this->bodegaRepository->findOneBy(['nombre' => $data->nombre]);
-            if (is_null($bodega)) {
+            if (!is_null($bodega)) {
                 return new JsonResponse(['status' => 'El nombre ya existe en la bd'], Response::HTTP_BAD_REQUEST);
             }
             $denominacion = $this->denominacionRepository->find($data->denominacion);
             if (is_null($denominacion)) {
-                return new JsonResponse(['status' => 'La denominación de origen no existe existe en la bd o el nombre es incorrecto'], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['status' => 'La denominación de origen no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
             }
-            $poblacion = (isset($data->poblacion) && !empty($data->poblacion)) ? $data->poblacion : null;
-            $codPostal = (isset($data->cod_postal) && !empty($data->cod_postal)) ? $data->cod_postal : null;
-            $email = (isset($data->email) && !empty($data->email)) ? $data->email : null;
-            $telefono = (isset($data->telefono) && !empty($data->telefono)) ? $data->telefono : null;
-            $web = (isset($data->web) && !empty($data->web)) ? $data->web : null;
+            $poblacion = (!isset($data->poblacion) || empty($data->poblacion)) ? null : $data->poblacion;
+            $codPostal = (!isset($data->cod_postal) || empty($data->cod_postal)) ? null : $data->cod_postal;
+            $email = (!isset($data->email) || empty($data->email)) ? null : $data->email;
+            $telefono = (!isset($data->telefono) || empty($data->telefono)) ? null : $data->telefono;
+            $web = (!isset($data->web) || empty($data->web)) ? null : $data->web;
 
-            $this->bodegaRepository->new($data->nombre, $data->direccion,$poblacion, $data->provincia, $codPostal, $email, $telefono, $web, $denominacion, true);
+            $this->bodegaRepository->new($data->nombre, $data->direccion, $poblacion, $data->provincia, $codPostal, $email, $telefono, $web, $denominacion, true);
             if (!$this->bodegaRepository->testInsert($data->nombre)) {
                 return new JsonResponse(['status' => 'La inserción de la bodega falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
@@ -92,13 +92,13 @@ class BodegaController extends AbstractController
                 return new JsonResponse(['status' => "La bodega no existe en la bd"], Response::HTTP_NOT_FOUND);
             }
             $direccion = (isset($data->direccion) && !empty($data->direccion)) ? $data->direccion : null;
-            $poblacion = (isset($data->poblacion) && !empty($data->poblacion)) ? $data->poblacion : null;
+            $poblacion = (isset($data->poblacion)) ? $data->poblacion : null;
             $provincia = (isset($data->provincia) && !empty($data->provincia)) ? $data->provincia : null;
-            $codPostal = (isset($data->cod_postal) && !empty($data->cod_postal)) ? $data->cod_postal : null;
-            $email = (isset($data->email) && !empty($data->email)) ? $data->email : null;
-            $telefono = (isset($data->telefono) && !empty($data->telefono)) ? $data->telefono : null;
-            $web = (isset($data->web) && !empty($data->web)) ? $data->web : null;
-            if(!$this->bodegaRepository->update($bodega, $direccion, $poblacion, $provincia, $codPostal, $email, $telefono, $web, true)){
+            $codPostal = (isset($data->cod_postal)) ? $data->cod_postal : null;
+            $email = (isset($data->email)) ?  $data->email : null;
+            $telefono = (isset($data->telefono)) ? $data->telefono : null;
+            $web = (isset($data->web)) ? $data->web : null;
+            if (!$this->bodegaRepository->update($bodega, $direccion, $poblacion, $provincia, $codPostal, $email, $telefono, $web, true)) {
                 return new JsonResponse(['status' => 'La bodega no se ha actualizado'], Response::HTTP_BAD_REQUEST);
             }
             return new JsonResponse(['status' => 'Bodega actualizada correctamente'], Response::HTTP_OK);
@@ -129,5 +129,4 @@ class BodegaController extends AbstractController
             return new JsonResponse(['status' => $msg], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
- 
 }

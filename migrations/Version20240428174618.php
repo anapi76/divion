@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20240401185737 extends AbstractMigration
+final class Version20240428174618 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -25,7 +25,7 @@ final class Version20240401185737 extends AbstractMigration
         $this->addSql('CREATE TABLE bodega (idBodega INT AUTO_INCREMENT NOT NULL, nombre VARCHAR(50) NOT NULL, direccion VARCHAR(50) NOT NULL, poblacion VARCHAR(25) DEFAULT NULL, provincia VARCHAR(25) NOT NULL, codPostal VARCHAR(5) DEFAULT NULL, email VARCHAR(50) DEFAULT NULL, telefono VARCHAR(16) DEFAULT NULL, web VARCHAR(50) DEFAULT NULL, idDo INT NOT NULL, INDEX IDX_5CD2A5F61ACF2A1 (idDo), PRIMARY KEY(idBodega)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE color (idColor INT AUTO_INCREMENT NOT NULL, nombre VARCHAR(25) NOT NULL, PRIMARY KEY(idColor)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE cuerpo (idCuerpo INT AUTO_INCREMENT NOT NULL, nombre VARCHAR(15) NOT NULL, descripcion LONGTEXT NOT NULL, PRIMARY KEY(idCuerpo)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE denominacion (idDo INT AUTO_INCREMENT NOT NULL, nombre VARCHAR(50) NOT NULL, calificada TINYINT(1) DEFAULT 0 NOT NULL, creacion INT DEFAULT NULL, web VARCHAR(50) DEFAULT NULL, imagen VARCHAR(50) NOT NULL, historia LONGTEXT NOT NULL, descripcion LONGTEXT NOT NULL, tipoVinos LONGTEXT NOT NULL, idRegion INT NOT NULL, INDEX IDX_D860CE2A6C7359EC (idRegion), PRIMARY KEY(idDo)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE denominacion (idDo INT AUTO_INCREMENT NOT NULL, nombre VARCHAR(50) NOT NULL, calificada TINYINT(1) DEFAULT 0 NOT NULL, creacion INT DEFAULT NULL, web VARCHAR(50) DEFAULT NULL, imagen VARCHAR(50) NOT NULL, historia LONGTEXT NOT NULL, descripcion LONGTEXT NOT NULL, descripcionVinos LONGTEXT NOT NULL, idRegion INT NOT NULL, INDEX IDX_D860CE2A6C7359EC (idRegion), PRIMARY KEY(idDo)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE maduracion (idMaduracion INT AUTO_INCREMENT NOT NULL, nombre VARCHAR(30) NOT NULL, descripcion VARCHAR(50) DEFAULT NULL, PRIMARY KEY(idMaduracion)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE maridaje (idMaridaje INT AUTO_INCREMENT NOT NULL, nombre VARCHAR(50) NOT NULL, UNIQUE INDEX UNIQ_8E5E431D3A909126 (nombre), PRIMARY KEY(idMaridaje)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE puntuacion (idPuntuacion INT AUTO_INCREMENT NOT NULL, puntos INT NOT NULL, descripcion LONGTEXT NOT NULL, UNIQUE INDEX UNIQ_ABF67C3F28BAD48F (puntos), PRIMARY KEY(idPuntuacion)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');

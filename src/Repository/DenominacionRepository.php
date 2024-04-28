@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Denominacion;
 use App\Entity\Region;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Persistence\ManagerRegistry;
@@ -25,27 +26,6 @@ class DenominacionRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Denominacion::class);
         $this->uvaDoRepository = $uvaDoRepository;
-    }
-
-    public function denominacionesJSON(Denominacion $denominacion): mixed
-    {
-        $calificada = ($denominacion->isCalificada()) ? 'Denominación de origen calificada' : '';
-        $json = array(
-            'id' => $denominacion->getId(),
-            'nombre' => $denominacion->getNombre(),
-            'calificada' => $calificada,
-            'creacion' => $denominacion->getCreacion(),
-            'web' => $denominacion->getWeb(),
-            'imagen' => $denominacion->getImagen(),
-            'historia' => $denominacion->getHistoria(),
-            'descripcion' => $denominacion->getDescripcion(),
-            'tipo_vinos' => $denominacion->getTipoVinos(),
-            'region' => $denominacion->getRegion()->getNombre(),
-            'bodegas' => $this->bodegasJSON($denominacion->getBodegas()),
-            'uvas_permitidas' => $this->uvasJSON($denominacion->getUvas()),
-        );
-
-        return $json;
     }
 
     public function findAllDenominaciones(): mixed
@@ -70,6 +50,103 @@ class DenominacionRepository extends ServiceEntityRepository
         return $json;
     }
 
+    public function new(string $nombre, bool $calificada, ?int $creacion, ?string $web, string $imagen, string $historia, string $descripcion, string $descripcionVinos, Region $region, array $uvas, bool $flush): void
+    {
+        try {
+            $denominacion = new Denominacion();
+            $denominacion->setNombre($nombre);
+            $denominacion->setCalificada($calificada);
+            if (!is_null($creacion)) $denominacion->setCreacion($creacion);
+            if (!is_null($web)) $denominacion->setWeb($web);
+            $denominacion->setImagen($imagen);
+            $denominacion->setHistoria($historia);
+            $denominacion->setDescripcion($descripcion);
+            $denominacion->setDescripcionVinos($descripcionVinos);
+            $denominacion->setRegion($region);
+            $this->uvaDoRepository->new($uvas, $denominacion);
+            $this->save($denominacion, $flush);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function update(Denominacion $denominacion, bool $calificada, ?int $creacion, ?string $web, ?string $imagen, ?string $historia, ?string $descripcion, ?string $descripcionVinos, ?array $uvas, bool $flush): bool
+    {
+        try {
+            $update = false;
+            if ($calificada) {
+                $denominacion->setCalificada($calificada);
+                $update = true;
+            }
+            if (!is_null($creacion)) {
+                $creacion = (!empty($creacion)) ? $creacion : null;
+                $denominacion->setCreacion($creacion);
+                $update = true;
+            }
+            if (!is_null($web)) {
+                $web=(!empty($web))?$web:null;
+                $denominacion->setWeb($web);
+                $update = true;
+            }
+            if (!is_null($imagen)) {
+                $denominacion->setImagen($imagen);
+                $update = true;
+            }
+            if (!is_null($historia)) {
+                $denominacion->setHistoria($historia);
+                $update = true;
+            }
+            if (!is_null($descripcion)) {
+                $denominacion->setDescripcion($descripcion);
+                $update = true;
+            }
+            if (!is_null($descripcionVinos)) {
+                $denominacion->setDescripcionVinos($descripcionVinos);
+                $update = true;
+            }
+            if (!is_null($uvas)) {
+                $this->uvaDoRepository->new($uvas, $denominacion);
+                $update = true;
+            }
+            $this->save($denominacion, $flush);
+            return $update;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function remove(Denominacion $denominacion, bool $flush = false): void
+    {
+        try {
+            $this->getEntityManager()->remove($denominacion);
+            if ($flush) {
+                $this->getEntityManager()->flush();
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function denominacionesJSON(Denominacion $denominacion): mixed
+    {
+        $calificada = ($denominacion->isCalificada()) ? 'Denominación de origen calificada' : '';
+        $json = array(
+            'id' => $denominacion->getId(),
+            'nombre' => $denominacion->getNombre(),
+            'calificada' => $calificada,
+            'creacion' => $denominacion->getCreacion(),
+            'web' => $denominacion->getWeb(),
+            'imagen' => $denominacion->getImagen(),
+            'historia' => $denominacion->getHistoria(),
+            'descripcion' => $denominacion->getDescripcion(),
+            'descripcion_vinos' => $denominacion->getDescripcionVinos(),
+            'region' => $denominacion->getRegion()->getNombre(),
+            'bodegas' => $this->bodegasJSON($denominacion->getBodegas()),
+            'uvas_permitidas' => $this->uvasJSON($denominacion->getUvas()),
+        );
+        return $json;
+    }
+
     public function bodegasJSON(Collection $bodegas): mixed
     {
         $json = array();
@@ -88,77 +165,6 @@ class DenominacionRepository extends ServiceEntityRepository
         return $json;
     }
 
-    public function new(string $nombre, bool $calificada, ?int $creacion, ?string $web, string $imagen, string $historia, string $descripcion, string $tipoVinos, Region $region, array $tiposUva, bool $flush): void
-    {
-        try {
-            $denominacion = new Denominacion();
-            $denominacion->setNombre($nombre);
-            $denominacion->setCalificada($calificada);
-            if (!is_null($creacion)) $denominacion->setCreacion($creacion);
-            if (!is_null($web)) $denominacion->setWeb($web);
-            $denominacion->setImagen($imagen);
-            $denominacion->setHistoria($historia);
-            $denominacion->setDescripcion($descripcion);
-            $denominacion->setTipoVinos($tipoVinos);
-            $denominacion->setRegion($region);
-            $this->uvaDoRepository->new($tiposUva, $denominacion);
-            $this->save($denominacion, $flush);
-        } catch (\Exception $e) {
-            throw $e;
-        }
-    }
-
-    public function update(Denominacion $denominacion, bool $calificada, ?string $web, ?string $imagen, ?string $historia, ?string $descripcion, ?string $tipoVinos, ?array $tiposUva, bool $flush): bool
-    {
-        try {
-            $update=false;
-            if($calificada){
-                $denominacion->setCalificada($calificada);
-                $update=true;
-            }
-            if (!is_null($web)){
-                $denominacion->setWeb($web);
-                $update=true;
-            } 
-            if (!is_null($imagen)){
-                $denominacion->setImagen($imagen);
-                $update=true;
-            } 
-            if (!is_null($historia)){
-                $denominacion->setHistoria($historia);
-                $update=true;
-            } 
-            if (!is_null($descripcion)){
-                $denominacion->setDescripcion($descripcion);
-                $update=true;
-            } 
-            if (!is_null($tipoVinos)){
-                $denominacion->setTipoVinos($tipoVinos);
-                $update=true;
-            }
-            if (!is_null($tiposUva)){
-                $this->uvaDoRepository->new($tiposUva, $denominacion);
-                $update=true;
-            }
-            $this->save($denominacion, $flush);
-            return $update;
-        } catch (\Exception $e) {
-            throw $e;
-        }
-    }
-
-    public function remove(Denominacion $denominacion, bool $flush = false): void
-    {
-        try {
-            $this->getEntityManager()->remove($denominacion);
-            if ($flush) {
-                $this->getEntityManager()->flush();
-            }
-        } catch (\Exception $e) {
-            throw $e;   
-        }
-    }
-
     public function save(Denominacion $denominacion, bool $flush = false): void
     {
         try {
@@ -171,7 +177,6 @@ class DenominacionRepository extends ServiceEntityRepository
         }
     }
 
-    //método para comprobar si se ha insertado el proveedor
     public function testInsert(string $nombre): bool
     {
         $entidad = $this->findOneBy(['nombre' => $nombre]);
@@ -190,6 +195,13 @@ class DenominacionRepository extends ServiceEntityRepository
         else {
             return false;
         }
+    }
+
+    public function isValidCreacion(int $creacion): bool
+    {
+        $now = new DateTime('now');
+        $year = (int) $now->format('Y');
+        return ($creacion !== null && ($creacion >= 1900 && $creacion <= $year));
     }
 
     //    /**

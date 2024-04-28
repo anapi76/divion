@@ -2,10 +2,9 @@
 
 namespace App\Controller;
 
-use App\Entity\Denominacion;
-use App\Repository\DenominacionRepository;
-use App\Repository\RegionRepository;
-use App\Repository\UvaDoRepository;
+use App\Repository\PuntuacionRepository;
+use App\Repository\PuntuacionVinoRepository;
+use App\Repository\VinoRepository;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,40 +12,45 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class DenominacionController extends AbstractController
+class PuntuacionVinoController extends AbstractController
 {
-    private DenominacionRepository $denominacionRepository;
-    private RegionRepository $regionRepository;
-    private UvaDoRepository $uvaDoRepository;
+    private PuntuacionVinoRepository $puntuacionVinoRepository;
+    private VinoRepository $vinoRepository;
+    private PuntuacionRepository $puntuacionRepository;
 
-    public function __construct(DenominacionRepository $denominacionRepository, RegionRepository $regionRepository, UvaDoRepository $uvaDoRepository)
+
+    public function __construct(PuntuacionVinoRepository $puntuacionVinoRepository,VinoRepository $vinoRepository,PuntuacionRepository $puntuacionRepository)
     {
-        $this->denominacionRepository = $denominacionRepository;
-        $this->regionRepository = $regionRepository;
-        $this->uvaDoRepository = $uvaDoRepository;
+        $this->puntuacionVinoRepository = $puntuacionVinoRepository; 
+        $this->vinoRepository=$vinoRepository;
+        $this->puntuacionRepository=$puntuacionRepository;
     }
 
-    #[Route('/denominacion', name: 'app_denominacion_all', methods: ['GET'])]
+    #[Route('/puntuacion', name: 'app_puntuacion_all', methods: ['GET'])]
     public function showAll(): JsonResponse
     {
-        $denominaciones = $this->denominacionRepository->findAllDenominaciones();
-        if (is_null($denominaciones)) {
-            return new JsonResponse(['status' => 'No existen denominaciones en la bd'], Response::HTTP_NOT_FOUND);
+        $puntuaciones = $this->puntuacionVinoRepository->findAllPuntuaciones();
+        if (is_null($puntuaciones)) {
+            return new JsonResponse(['status' => 'No existen puntuaciones en la bd'], Response::HTTP_NOT_FOUND);
         }
-        return new JsonResponse($denominaciones, Response::HTTP_OK);
+        return new JsonResponse($puntuaciones, Response::HTTP_OK);
     }
 
-    #[Route('/denominacion/{id}', name: 'app_denominacion', methods: ['GET'])]
-    public function show(?Denominacion $denominacion = null): JsonResponse
+    #[Route('/puntuacion/{idVino}', name: 'app_puntuacion_vino', methods: ['GET'])]
+    public function show(?int $idVino = null): JsonResponse
     {
-        if (is_null($denominacion)) {
-            return new JsonResponse(['status' => 'La denominación de origen no existe en la bd'], Response::HTTP_NOT_FOUND);
+        $vino=$this->vinoRepository->find($idVino);
+        if (is_null($vino)) {
+            return new JsonResponse(['status' => 'El vino no existe en la bd'], Response::HTTP_NOT_FOUND);
         }
-        $denominacionJson = $this->denominacionRepository->findDenominacion($denominacion);
-        return new JsonResponse($denominacionJson, Response::HTTP_OK);
+        $puntuaciones = $this->puntuacionVinoRepository->findAllByVino($vino);
+        if(is_null($puntuaciones)){
+            return new JsonResponse(['status' => 'No existen puntuaciones en la bd'], Response::HTTP_NOT_FOUND);
+        }
+        return new JsonResponse($puntuaciones, Response::HTTP_OK);
     }
 
-    #[Route('/denominacion', name: 'app_denominacion_new', methods: ['POST'])]
+  #[Route('/puntuacion', name: 'app_puntuacion_new', methods: ['POST'])]
     public function add(Request $request): JsonResponse
     {
         try {
@@ -54,37 +58,32 @@ class DenominacionController extends AbstractController
             if (is_null($data)) {
                 return new JsonResponse(['status' => 'Error al decodificar el archivo json'], Response::HTTP_BAD_REQUEST);
             }
-            if (!isset($data->nombre) || empty($data->nombre) || !isset($data->imagen) || empty($data->imagen) || !isset($data->historia) || empty($data->historia) || !isset($data->descripcion) || empty($data->descripcion) || !isset($data->descripcion_vinos) || empty($data->descripcion_vinos) || !isset($data->region) || empty($data->region)) {
+            if (!isset($data->vino) || empty($data->vino) || !isset($data->puntuacion) || empty($data->puntuacion)) {
                 return new JsonResponse(['status' => 'Faltan parámetros'], Response::HTTP_BAD_REQUEST);
             }
-            $denominacion = $this->denominacionRepository->findOneBy(['nombre' => $data->nombre]);
-            if (!is_null($denominacion)) {
-                return new JsonResponse(['status' => 'El nombre ya existe en la bd'], Response::HTTP_BAD_REQUEST);
+            $vino = $this->vinoRepository->find(['nombre' => $data->vino]);
+            if (!is_null($vino)) {
+                return new JsonResponse(['status' => 'El vino no existe en la bd'], Response::HTTP_BAD_REQUEST);
             }
-            $region = $this->regionRepository->find($data->region);
-            if (is_null($region)) {
-                return new JsonResponse(['status' => 'La región no existe existe en la bd o el nombre es incorrecto'], Response::HTTP_BAD_REQUEST);
+            $puntuacion = $this->puntuacionRepository->find($data->puntuacion);
+            if (is_null($puntuacion)) {
+                return new JsonResponse(['status' => 'La puntuación no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
             }
-            $calificada = (isset($data->calificada) && !empty($data->calificada)) ? $data->calificada : false;
-            $creacion = (!isset($data->creacion) || empty($data->creacion)) ? null : $data->creacion;
-            if (!is_null($creacion) && !$this->denominacionRepository->isValidCreacion($creacion)) {
-                return new JsonResponse(['status' => 'Año de creación incorrecto'], Response::HTTP_BAD_REQUEST);
-            }
-            $web = (!isset($data->web) || empty($data->web)) ? null : $data->web;
-            $uvas = (isset($data->uvas_permitidas) && !empty($data->uvas_permitidas)) ? $data->uvas_permitidas : null;
+            $comentarios = (isset($data->comentarios) && !empty($data->comentarios)) ? $data->comentarios : true;
+            $usuario = (isset($data->usuario)  && !empty($data->usuario)) ? $data->usuario:null;
 
-            $this->denominacionRepository->new($data->nombre, $calificada, $creacion, $web, $data->imagen, $data->historia, $data->descripcion, $data->descripcion_vinos, $region, $uvas, true);
-            if (!$this->denominacionRepository->testInsert($data->nombre)) {
-                return new JsonResponse(['status' => 'La inserción de la denominación de origen falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            $this->puntuacionVinoRepository->new($vino, $puntuacion, $comentarios, $usuario, true);
+            if (!$this->puntuacionVinoRepository->testInsert($data->nombre)) {
+                return new JsonResponse(['status' => 'La inserción de la puntuación falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-            return new JsonResponse(['status' => 'Denominación de origen insertada correctamente'], Response::HTTP_CREATED);
+            return new JsonResponse(['status' => 'Puntuación insertada correctamente'], Response::HTTP_CREATED);
         } catch (Exception $e) {
             $msg = 'Error del servidor: ' . $e->getMessage();
             return new JsonResponse(['status' => $msg], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    #[Route('/denominacion/{id}', name: 'app_denominacion_update', methods: ['PUT'])]
+     /*  #[Route('/denominacion/{id}', name: 'app_denominacion_update', methods: ['PUT'])]
     public function update(Request $request, ?Denominacion $denominacion = null): JsonResponse
     {
         try {
@@ -142,5 +141,5 @@ class DenominacionController extends AbstractController
             $msg = 'Error del servidor: ' . $e->getMessage();
             return new JsonResponse(['status' => $msg], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-    }
+    } */
 }

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\PuntuacionVino;
+use App\Entity\Vino;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,6 +20,46 @@ class PuntuacionVinoRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, PuntuacionVino::class);
+    }
+
+    public function findAllPuntuaciones(): mixed
+    {
+        $puntuaciones = $this->findAll();
+        if (empty($puntuaciones)) {
+            return null;
+        }
+        $json = array();
+        foreach ($puntuaciones as $puntuacion) {
+            $json[] = $this->puntuacionJSON($puntuacion);
+        }
+        return $json;
+    }
+
+    public function findAllByVino(Vino $vino): mixed
+    {
+        $puntuaciones = $this->findBy(["vino"=>$vino]);
+        if (empty($puntuaciones)) {
+            return null;
+        }
+        $json = array();
+        foreach ($puntuaciones as $puntuacion) {
+            $json[] = $this->puntuacionJSON($puntuacion);
+        }
+        return $json;
+    }
+
+    public function puntuacionJson(PuntuacionVino $puntuacion)
+    {
+        $json = array(
+            'id' => $puntuacion->getId(),
+            'vino' => $puntuacion->getVino()->getNombre(),
+            'puntuacion' => $puntuacion->getPuntuacion()->getPuntos(),
+            'descripcion' => $puntuacion->getPuntuacion()->getDescripcion(),
+            'comentarios' => $puntuacion->getComentarios(),
+            'usuario' => $puntuacion->getUsuario()
+        );
+
+        return $json;
     }
 
     //    /**

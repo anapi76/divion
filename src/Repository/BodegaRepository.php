@@ -45,35 +45,9 @@ class BodegaRepository extends ServiceEntityRepository
         return $json;
     }
 
-    public function bodegasJSON(Bodega $bodega): mixed
-    {
-        $json = array(
-            'id' => $bodega->getId(),
-            'nombre' => $bodega->getNombre(),
-            'direccion' => $bodega->getDireccion(),
-            'poblacion' => $bodega->getPoblacion(),
-            'provincia' => $bodega->getProvincia(),
-            'cod_postal' => $bodega->getCodPostal(),
-            'email' => $bodega->getEmail(),
-            'telefono' => $bodega->getTelefono(),
-            'web' => $bodega->getWeb(),
-            'bodega' => $bodega->getDenominacion()->getNombre(),
-            'vinos'=>$this->vinosJSON($bodega->getVinos())
-        );
+    
 
-        return $json;
-    }
-
-    public function vinosJSON(Collection $vinos): mixed
-    {
-        $json = array();
-        foreach ($vinos as $vino) {
-            $json[] = $vino->getNombre();
-        }
-        return $json;
-    }
-
-    public function new(string $nombre,string $direccion, string $poblacion, string $provincia, ?string $codPostal, ?string $email, ?string $telefono, ?string $web, Denominacion $denominacion, bool $flush): void
+    public function new(string $nombre,string $direccion, ?string $poblacion, string $provincia, ?string $codPostal, ?string $email, ?string $telefono, ?string $web, Denominacion $denominacion, bool $flush): void
     {
         try {
             $bodega = new Bodega();
@@ -102,6 +76,7 @@ class BodegaRepository extends ServiceEntityRepository
                 $update=true;
             } 
             if (!is_null($poblacion)){
+                $poblacion=(!empty($poblacion)?$poblacion:null);
                 $bodega->setPoblacion($poblacion);
                 $update=true;
             } 
@@ -110,18 +85,22 @@ class BodegaRepository extends ServiceEntityRepository
                 $update=true;
             } 
             if (!is_null($codPostal)){
+                $codPostal=(!empty($codPostal)?$codPostal:null);
                 $bodega->setCodPostal($codPostal);
                 $update=true;
             } 
             if (!is_null($email)){
+                $email=(!empty($email)?$email:null);
                 $bodega->setEmail($email);
                 $update=true;
             }
             if (!is_null($telefono)){
+                $telefono=(!empty($telefono)?$telefono:null);
                 $bodega->setTelefono($telefono);
                 $update=true;
             } 
             if (!is_null($web)){
+                $web=(!empty($web)?$web:null);
                 $bodega->setWeb($web);
                 $update=true;
             } 
@@ -174,6 +153,34 @@ class BodegaRepository extends ServiceEntityRepository
         else {
             return false;
         }
+    }
+
+    public function bodegasJSON(Bodega $bodega): mixed
+    {
+        $json = array(
+            'id' => $bodega->getId(),
+            'nombre' => $bodega->getNombre(),
+            'direccion' => $bodega->getDireccion(),
+            'poblacion' => $bodega->getPoblacion(),
+            'provincia' => $bodega->getProvincia(),
+            'cod_postal' => $bodega->getCodPostal(),
+            'email' => $bodega->getEmail(),
+            'telefono' => $bodega->getTelefono(),
+            'web' => $bodega->getWeb(),
+            'denominacion' => $bodega->getDenominacion()->getNombre(),
+            'vinos'=>$this->vinosJSON($bodega->getVinos())
+        );
+
+        return $json;
+    }
+
+    public function vinosJSON(Collection $vinos): mixed
+    {
+        $json = array();
+        foreach ($vinos as $vino) {
+            $json[] = $vino->getNombre();
+        }
+        return $json;
     }
 
     //    /**
