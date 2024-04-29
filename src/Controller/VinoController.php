@@ -7,6 +7,7 @@ use App\Entity\Vino;
 use App\Repository\BodegaRepository;
 use App\Repository\ColorRepository;
 use App\Repository\TipoVinoRepository;
+use App\Repository\VinoMaridajeRepository;
 use App\Repository\VinoRepository;
 use App\Repository\VinoUvaRepository;
 use Exception;
@@ -23,14 +24,16 @@ class VinoController extends AbstractController
     private ColorRepository $colorRepository;
     private TipoVinoRepository $tipoVinoRepository;
     private VinoUvaRepository $vinoUvaRepository;
+    private VinoMaridajeRepository $vinoMaridajeRepository;
 
-    public function __construct(VinoRepository $vinoRepository, BodegaRepository $bodegaRepository, ColorRepository $colorRepository, TipoVinoRepository $tipoVinoRepository, VinoUvaRepository $vinoUvaRepository)
+    public function __construct(VinoRepository $vinoRepository, BodegaRepository $bodegaRepository, ColorRepository $colorRepository, TipoVinoRepository $tipoVinoRepository, VinoUvaRepository $vinoUvaRepository, VinoMaridajeRepository $vinoMaridajeRepository)
     {
         $this->vinoRepository = $vinoRepository;
         $this->bodegaRepository = $bodegaRepository;
         $this->colorRepository = $colorRepository;
         $this->tipoVinoRepository = $tipoVinoRepository;
-        $this->vinoUvaRepository=$vinoUvaRepository;
+        $this->vinoUvaRepository = $vinoUvaRepository;
+        $this->vinoMaridajeRepository = $vinoMaridajeRepository;
     }
 
     #[Route('/vino', name: 'app_vino_all', methods: ['GET'])]
@@ -61,12 +64,12 @@ class VinoController extends AbstractController
             if (is_null($data)) {
                 return new JsonResponse(['status' => 'Error al decodificar el archivo json'], Response::HTTP_BAD_REQUEST);
             }
-            if (!isset($data->nombre) || empty($data->nombre) || !isset($data->descripcion) || empty($data->descripcion) || !isset($data->notaCata) || empty($data->notaCata) || !isset($data->imagen) || empty($data->imagen) || !isset($data->color) || empty($data->color) || !isset($data->tipoVino) || empty($data->tipoVino) || !isset($data->bodega) || empty($data->bodega)) {
+            if (!$this->vinoRepository->requiredFields($data)) {
                 return new JsonResponse(['status' => 'Faltan parámetros'], Response::HTTP_BAD_REQUEST);
             }
             $color = $this->colorRepository->find($data->color);
             if (is_null($color)) {
-                return new JsonResponse(['status' => 'El color no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['status' => 'El color del vino no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
             }
             $tipoVino = $this->tipoVinoRepository->find($data->tipoVino);
             if (is_null($tipoVino)) {
@@ -76,7 +79,7 @@ class VinoController extends AbstractController
             if (is_null($bodega)) {
                 return new JsonResponse(['status' => 'La bodega no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
             }
-            $maduracion = (isset($data->maduracion) && !empty($data->maduracion)) ? $this->vinoRepository->validateMaduracion($data->maduracion) : null;
+            $maduracion = (isset($data->maduracion) && !empty($data->maduracion)) ? $this->vinoRepository->isValidMaduracion($data->maduracion) : null;
             $azucar = (isset($data->azucar) && !empty($data->azucar)) ? $this->vinoRepository->validateAzucar($data->azucar) : null;
             $sabor = (isset($data->sabor) && !empty($data->sabor)) ? $this->vinoRepository->validateSabor($data->sabor) : null;
             $cuerpo = (isset($data->cuerpo) && !empty($data->cuerpo)) ? $this->vinoRepository->validateCuerpo($data->cuerpo) : null;
@@ -121,7 +124,7 @@ class VinoController extends AbstractController
         }
     }
 
-   #[Route('/vino/{id}', name: 'app_vino_delete', methods: ['DELETE'])]
+    #[Route('/vino/{id}', name: 'app_vino_delete', methods: ['DELETE'])]
     public function delete(?Vino $vino = null): JsonResponse
     {
         try {
@@ -134,9 +137,15 @@ class VinoController extends AbstractController
                     $this->vinoUvaRepository->remove($uvaDo);
                 }
             }
+            if (count($vino->getMaridajes()) > 0) {
+                foreach ($vino->getMaridajes() as $vinoMaridaje) {
+                    $vino->removeMaridaje($vinoMaridaje);
+                    $this->vinoMaridajeRepository->remove($uvaDo);
+                }
+            }
             $this->vinoRepository->remove($vino, true);
             if ($this->vinoRepository->testDelete($vino->getNombre())) {
-                return new JsonResponse('El vinon ha sido borrado', Response::HTTP_OK);
+                return new JsonResponse('El vino ha sido borrado', Response::HTTP_OK);
             } else {
                 return new JsonResponse(['status' => 'La eliminación del vino falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }

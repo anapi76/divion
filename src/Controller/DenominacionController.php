@@ -54,7 +54,7 @@ class DenominacionController extends AbstractController
             if (is_null($data)) {
                 return new JsonResponse(['status' => 'Error al decodificar el archivo json'], Response::HTTP_BAD_REQUEST);
             }
-            if (!isset($data->nombre) || empty($data->nombre) || !isset($data->imagen) || empty($data->imagen) || !isset($data->historia) || empty($data->historia) || !isset($data->descripcion) || empty($data->descripcion) || !isset($data->descripcion_vinos) || empty($data->descripcion_vinos) || !isset($data->region) || empty($data->region)) {
+            if (!$this->denominacionRepository->requiredFields($data)) {
                 return new JsonResponse(['status' => 'Faltan parámetros'], Response::HTTP_BAD_REQUEST);
             }
             $denominacion = $this->denominacionRepository->findOneBy(['nombre' => $data->nombre]);
@@ -63,7 +63,7 @@ class DenominacionController extends AbstractController
             }
             $region = $this->regionRepository->find($data->region);
             if (is_null($region)) {
-                return new JsonResponse(['status' => 'La región no existe existe en la bd o el nombre es incorrecto'], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['status' => 'La región no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
             }
             $calificada = (isset($data->calificada) && !empty($data->calificada)) ? $data->calificada : false;
             $creacion = (!isset($data->creacion) || empty($data->creacion)) ? null : $data->creacion;
@@ -95,18 +95,18 @@ class DenominacionController extends AbstractController
             if (is_null($denominacion)) {
                 return new JsonResponse(['status' => "La denominación de origen no existe en la bd"], Response::HTTP_NOT_FOUND);
             }
-            if(isset($data->creacion) && !$this->denominacionRepository->isValidCreacion($data->creacion)){
+            if (isset($data->creacion) && !$this->denominacionRepository->isValidCreacion($data->creacion)) {
                 return new JsonResponse(['status' => 'Año de creación incorrecto'], Response::HTTP_BAD_REQUEST);
             }
             $creacion = (isset($data->creacion) && $this->denominacionRepository->isValidCreacion($data->creacion)) ? $data->creacion : null;
-            $calificada = (isset($data->calificada) && !empty($data->calificada)) ? $data->calificada : false; 
+            $calificada = (isset($data->calificada) && !empty($data->calificada)) ? $data->calificada : false;
             $web = (isset($data->web)) ? $data->web : null;
             $imagen = (isset($data->imagen) && !empty($data->imagen)) ? $data->imagen : null;
             $historia = (isset($data->historia) && !empty($data->historia)) ? $data->historia : null;
             $descripcion = (isset($data->descripcion) && !empty($data->descripcion)) ? $data->descripcion : null;
             $descripcionVinos = (isset($data->descripcion_vinos) && !empty($data->descripcion_vinos)) ? $data->descripcion_vinos : null;
             $uvas = (isset($data->uvas_permitidas) && !empty($data->uvas_permitidas)) ? $data->uvas_permitidas : null;
-            if (!$this->denominacionRepository->update($denominacion, $calificada, $creacion,$web, $imagen, $historia, $descripcion, $descripcionVinos, $uvas, true)) {
+            if (!$this->denominacionRepository->update($denominacion, $calificada, $creacion, $web, $imagen, $historia, $descripcion, $descripcionVinos, $uvas, true)) {
                 return new JsonResponse(['status' => 'La denominación de origen no se ha actualizado'], Response::HTTP_BAD_REQUEST);
             }
             return new JsonResponse(['status' => 'Denominación de origen actualizada correctamente'], Response::HTTP_OK);
@@ -134,7 +134,7 @@ class DenominacionController extends AbstractController
             }
             $this->denominacionRepository->remove($denominacion, true);
             if ($this->denominacionRepository->testDelete($denominacion->getNombre())) {
-                return new JsonResponse('La denominación de origen ha sido borrada', Response::HTTP_OK);
+                return new JsonResponse('La denominación de origen ha sido borrada correctamente', Response::HTTP_OK);
             } else {
                 return new JsonResponse(['status' => 'La eliminación de la denominación de origen falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }

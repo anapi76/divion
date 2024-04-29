@@ -2,7 +2,9 @@
 
 namespace App\Repository;
 
+use App\Entity\Puntuacion;
 use App\Entity\PuntuacionVino;
+use App\Entity\Region;
 use App\Entity\Vino;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -37,7 +39,7 @@ class PuntuacionVinoRepository extends ServiceEntityRepository
 
     public function findAllByVino(Vino $vino): mixed
     {
-        $puntuaciones = $this->findBy(["vino"=>$vino]);
+        $puntuaciones = $this->findBy(["vino" => $vino]);
         if (empty($puntuaciones)) {
             return null;
         }
@@ -48,7 +50,47 @@ class PuntuacionVinoRepository extends ServiceEntityRepository
         return $json;
     }
 
-    public function puntuacionJson(PuntuacionVino $puntuacion)
+    public function new(Vino $vino, Puntuacion $puntuacion, ?string $comentarios, ?string $usuario, bool $flush): bool
+    {
+        try {
+            $puntuacionVino = new PuntuacionVino();
+            $puntuacionVino->setVino($vino);
+            $puntuacionVino->setPuntuacion($puntuacion);
+            if (!is_null($comentarios)) $puntuacionVino->setComentarios($comentarios);
+            if (!is_null($usuario)) $puntuacionVino->setUsuario($usuario);
+            return ($this->save($puntuacionVino, $flush));
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function save(PuntuacionVino $puntuacionVino, bool $flush = false): bool
+    {
+        try {
+            $this->getEntityManager()->persist($puntuacionVino);
+            if ($flush) {
+                $this->getEntityManager()->flush();
+            }
+            return ($flush);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function remove(PuntuacionVino $puntuacionVino, bool $flush = false):bool
+    {
+        try {
+            $this->getEntityManager()->remove($puntuacionVino);
+            if ($flush) {
+                $this->getEntityManager()->flush();
+            }
+            return $flush;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function puntuacionJson(PuntuacionVino $puntuacion): mixed
     {
         $json = array(
             'id' => $puntuacion->getId(),
@@ -60,6 +102,11 @@ class PuntuacionVinoRepository extends ServiceEntityRepository
         );
 
         return $json;
+    }
+
+    public function requiredFields(Object $data): bool
+    {
+        return (isset($data->vino) && !empty($data->vino) && isset($data->puntuacion) && !empty($data->puntuacion));
     }
 
     //    /**

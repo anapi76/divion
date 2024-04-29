@@ -84,7 +84,7 @@ class DenominacionRepository extends ServiceEntityRepository
                 $update = true;
             }
             if (!is_null($web)) {
-                $web=(!empty($web))?$web:null;
+                $web = (!empty($web)) ? $web : null;
                 $denominacion->setWeb($web);
                 $update = true;
             }
@@ -202,6 +202,11 @@ class DenominacionRepository extends ServiceEntityRepository
         $now = new DateTime('now');
         $year = (int) $now->format('Y');
         return ($creacion !== null && ($creacion >= 1900 && $creacion <= $year));
+    }
+
+    public function requiredFields(Object $data): bool
+    {
+        return (isset($data->nombre) && !empty($data->nombre) && isset($data->imagen) && !empty($data->imagen) && isset($data->historia) && !empty($data->historia) && isset($data->descripcion) && !empty($data->descripcion) && isset($data->descripcion_vinos) && !empty($data->descripcion_vinos) && isset($data->region) && !empty($data->region));
     }
 
     //    /**

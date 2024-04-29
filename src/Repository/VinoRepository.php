@@ -126,7 +126,17 @@ class VinoRepository extends ServiceEntityRepository
             throw $e;
         }
     }
-
+    public function remove(Vino $vino, bool $flush = false): void
+    {
+        try {
+            $this->getEntityManager()->remove($vino);
+            if ($flush) {
+                $this->getEntityManager()->flush();
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 
     public function vinosJSON(Vino $vino): mixed
     {
@@ -208,47 +218,68 @@ class VinoRepository extends ServiceEntityRepository
         }
     }
 
-    public function validateMaduracion(int $maduracionId): mixed
+    public function testDelete(string $nombre): bool
+    {
+        $entidad = $this->findOneBy(['nombre' => $nombre]);
+        if (empty($entidad))
+            return true;
+        else {
+            return false;
+        }
+    }
+
+    public function requiredFields(Object $data): bool
+    {
+        return (isset($data->nombre) && !empty($data->nombre) &&
+            isset($data->descripcion) && !empty($data->descripcion) &&
+            isset($data->notaCata) && !empty($data->notaCata) &&
+            isset($data->imagen) && !empty($data->imagen) &&
+            isset($data->color) && !empty($data->color) &&
+            isset($data->tipoVino) && !empty($data->tipoVino) &&
+            isset($data->bodega) && !empty($data->bodega));
+    }
+    
+    public function isValidMaduracion(int $maduracionId): mixed
     {
         $maduracion = $this->maduracionRepository->find($maduracionId);
         if (is_null($maduracion)) {
-            return new JsonResponse(['status' => 'La maduración no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['status' => 'Campo incorrecto'], Response::HTTP_BAD_REQUEST);
         }
         return $maduracion;
     }
 
-    public function validateAzucar(int $azucarId): mixed
+    public function isValidAzucar(int $azucarId): mixed
     {
         $azucar = $this->azucarRepository->find($azucarId);
         if (is_null($azucar)) {
-            return new JsonResponse(['status' => 'El azúcar no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['status' => 'Campo incorrecto'], Response::HTTP_BAD_REQUEST);
         }
         return $azucar;
     }
 
-    public function validateSabor(int $saborId): mixed
+    public function isValidSabor(int $saborId): mixed
     {
         $sabor = $this->saborRepository->find($saborId);
         if (is_null($sabor)) {
-            return new JsonResponse(['status' => 'El sabor no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['status' => 'Campo incorrecto'], Response::HTTP_BAD_REQUEST);
         }
         return $sabor;
     }
 
-    public function validateCuerpo(int $cuerpoId): mixed
+    public function isValidCuerpo(int $cuerpoId): mixed
     {
         $cuerpo = $this->cuerpoRepository->find($cuerpoId);
         if (is_null($cuerpo)) {
-            return new JsonResponse(['status' => 'El cuerpo no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['status' => 'Campo incorrecto'], Response::HTTP_BAD_REQUEST);
         }
         return $cuerpo;
     }
 
-    public function validateBoca(int $bocaId): mixed
+    public function isValidBoca(int $bocaId): mixed
     {
         $boca = $this->bocaRepository->find($bocaId);
         if (is_null($boca)) {
-            return new JsonResponse(['status' => 'La boca no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['status' => 'Campo incorrecto'], Response::HTTP_BAD_REQUEST);
         }
         return $boca;
     }

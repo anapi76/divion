@@ -120,7 +120,7 @@ class BodegaController extends AbstractController
             }
             $this->bodegaRepository->remove($bodega, true);
             if ($this->bodegaRepository->testDelete($bodega->getNombre())) {
-                return new JsonResponse('La bodega ha sido borrada', Response::HTTP_OK);
+                return new JsonResponse('La bodega ha sido borrada correctamente', Response::HTTP_OK);
             } else {
                 return new JsonResponse(['status' => 'La eliminación de la bodega falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
