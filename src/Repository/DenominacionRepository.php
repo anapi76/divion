@@ -36,7 +36,7 @@ class DenominacionRepository extends ServiceEntityRepository
         }
         $json = array();
         foreach ($denominaciones as $denominacion) {
-            $json[] = $this->denominacionesJSON($denominacion);
+            $json['results'][] = $this->denominacionesJSON($denominacion);
         }
         return $json;
     }
