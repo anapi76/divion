@@ -40,6 +40,9 @@ class Bodega
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $web = null;
 
+    #[ORM\Column(length: 50)]
+    private ?string $url = null;
+
     #[ORM\ManyToOne(inversedBy: 'bodegas')]
     #[ORM\JoinColumn(name: 'idDo', referencedColumnName: 'idDo',nullable: false)]
     private ?Denominacion $denominacion = null;
@@ -149,6 +152,18 @@ class Bodega
     public function setWeb(?string $web): static
     {
         $this->web = $web;
+
+        return $this;
+    }
+
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(?string $url): self
+    {
+        $this->url = $url;
 
         return $this;
     }

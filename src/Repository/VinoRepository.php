@@ -9,7 +9,7 @@ use App\Entity\Color;
 use App\Entity\Cuerpo;
 use App\Entity\Maduracion;
 use App\Entity\Sabor;
-use App\Entity\TipoVino;
+use App\Entity\Espumoso;
 use App\Entity\Vino;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\Collection;
@@ -36,7 +36,6 @@ class VinoRepository extends ServiceEntityRepository
     private CuerpoRepository $cuerpoRepository;
     private AzucarRepository $azucarRepository;
 
-
     public function __construct(ManagerRegistry $registry, VinoUvaRepository $vinoUvaRepository, VinoMaridajeRepository $vinoMaridajeRepository, MaduracionRepository $maduracionRepository, SaborRepository $saborRepository, BocaRepository $bocaRepository, CuerpoRepository $cuerpoRepository, AzucarRepository $azucarRepository)
     {
         parent::__construct($registry, Vino::class);
@@ -55,9 +54,38 @@ class VinoRepository extends ServiceEntityRepository
         if (empty($vinos)) {
             return null;
         }
-        $json = array();
+        $json = array('info' => array('count'=>count($vinos)), 
+        'results' => array());
         foreach ($vinos as $vino) {
-            $json[] = $this->vinosJSON($vino);
+            $json['results'][] = $this->vinosJSON($vino);
+        }
+        return $json;
+    }
+
+    public function findAllVinosByColor(Color $color): mixed
+    {
+        $vinos = $this->findBy(["color"=>$color]);
+        if (empty($vinos)) {
+            return null;
+        }
+        $json = array('info' => array('count'=>count($vinos)), 
+        'results' => array());
+        foreach ($vinos as $vino) {
+            $json['results'][] = $this->vinosJSON($vino);
+        }
+        return $json;
+    }
+
+    public function findAllVinosByEspumoso(Espumoso $espumoso): mixed
+    {
+        $vinos = $this->findBy(["espumoso"=>$espumoso]);
+        if (empty($vinos)) {
+            return null;
+        }
+        $json = array('info' => array('count'=>count($vinos)), 
+        'results' => array());
+        foreach ($vinos as $vino) {
+            $json['results'][] = $this->vinosJSON($vino);
         }
         return $json;
     }
@@ -67,11 +95,11 @@ class VinoRepository extends ServiceEntityRepository
         if (is_null($vino)) {
             return null;
         }
-        $json[] = $this->vinosJSON($vino);
+        $json = $this->vinosJSON($vino);
         return $json;
     }
 
-    public function new(string $nombre, string $descripcion, string $notaCata, string $imagen, Color $color, ?Azucar $azucar, TipoVino $tipoVino, ?Maduracion $maduracion, Bodega $bodega, ?Sabor $sabor, ?Cuerpo $cuerpo, ?Boca $boca, array $uvas, array $maridajes, bool $flush): void
+    public function new(string $nombre, string $descripcion, string $notaCata, string $imagen, string $url, Color $color, ?Azucar $azucar, Espumoso $espumoso, ?Maduracion $maduracion, Bodega $bodega, ?Sabor $sabor, ?Cuerpo $cuerpo, ?Boca $boca, array $uvas, array $maridajes, bool $flush): void
     {
         try {
             $vino = new Vino();
@@ -79,9 +107,10 @@ class VinoRepository extends ServiceEntityRepository
             $vino->setDescripcion($descripcion);
             $vino->setNotaCata($notaCata);
             $vino->setImagen($imagen);
+            $vino->setUrl($url);
             $vino->setColor($color);
             if (!is_null($azucar)) $vino->setAzucar($azucar);
-            if (!is_null($tipoVino)) $vino->setTipoVino($tipoVino);
+            if (!is_null($espumoso)) $vino->setEspumoso($espumoso);
             if (!is_null($maduracion)) $vino->setMaduracion($maduracion);
             $vino->setBodega($bodega);
             if (!is_null($sabor)) $vino->setSabor($sabor);
@@ -96,7 +125,7 @@ class VinoRepository extends ServiceEntityRepository
         }
     }
 
-    public function update(Vino $vino, ?string $descripcion, ?string $notaCata, ?string $imagen, ?array $uvas, ?array $maridajes, bool $flush): bool
+    public function update(Vino $vino, ?string $descripcion, ?string $notaCata, ?string $imagen, ?string $url,?array $uvas, ?array $maridajes, bool $flush): bool
     {
         try {
             $update = false;
@@ -110,6 +139,10 @@ class VinoRepository extends ServiceEntityRepository
             }
             if (!is_null($imagen)) {
                 $vino->setImagen($imagen);
+                $update = true;
+            }
+            if (!is_null($url)) {
+                $vino->setUrl($url);
                 $update = true;
             }
             if (!is_null($uvas)) {
@@ -145,15 +178,17 @@ class VinoRepository extends ServiceEntityRepository
         $sabor = ($vino->getSabor() == null) ? null : $vino->getSabor()->getNombre();
         $cuerpo = ($vino->getCuerpo() == null) ? null : $vino->getCuerpo()->getNombre();
         $boca = ($vino->getBoca() == null) ? null : $vino->getBoca()->getNombre();
+        $espumoso = ($vino->getEspumoso() == null) ? null : $vino->getEspumoso()->getNombre();
         $json = array(
             'id' => $vino->getId(),
             'nombre' => $vino->getNombre(),
             'descripcion' => $vino->getDescripcion(),
             'notaCata' => $vino->getNotaCata(),
             'imagen' => $vino->getImagen(),
+            'url' => $vino->getUrl(),
             'color' => $vino->getColor()->getNombre(),
             'azucar' => $azucar,
-            'tipoVino' => $vino->getTipoVino()->getNombre(),
+            'espumoso' => $espumoso,
             'maduracion' => $maduracion,
             'sabor' => $sabor,
             'cuerpo' => $cuerpo,
@@ -188,10 +223,11 @@ class VinoRepository extends ServiceEntityRepository
     {
         $json = array();
         foreach ($puntuaciones as $puntuacion) {
-            $json[] = [
-                $puntuacion->getPuntuacion()->getPuntos(),
-                $puntuacion->getPuntuacion()->getDescripcion()
-            ];
+            $json[] = array(
+                'puntos'=>$puntuacion->getPuntuacion()->getPuntos(),
+                'descripcion'=>$puntuacion->getPuntuacion()->getDescripcion(),
+                'comentarios'=>$puntuacion->getComentarios()
+            );
         }
         return $json;
     }
@@ -234,8 +270,8 @@ class VinoRepository extends ServiceEntityRepository
             isset($data->descripcion) && !empty($data->descripcion) &&
             isset($data->notaCata) && !empty($data->notaCata) &&
             isset($data->imagen) && !empty($data->imagen) &&
+            isset($data->url) && !empty($data->url) &&
             isset($data->color) && !empty($data->color) &&
-            isset($data->tipoVino) && !empty($data->tipoVino) &&
             isset($data->bodega) && !empty($data->bodega));
     }
     
@@ -282,6 +318,15 @@ class VinoRepository extends ServiceEntityRepository
             return new JsonResponse(['status' => 'Campo incorrecto'], Response::HTTP_BAD_REQUEST);
         }
         return $boca;
+    }
+
+    public function isValidEspumoso(int $espumosoId): mixed
+    {
+        $espumoso = $this->espumosoRepository->find($espumosoId);
+        if (is_null($espumoso)) {
+            return new JsonResponse(['status' => 'Campo incorrecto'], Response::HTTP_BAD_REQUEST);
+        }
+        return $espumoso;
     }
 
     //    /**

@@ -2,27 +2,27 @@
 
 namespace App\Repository;
 
-use App\Entity\TipoVino;
+use App\Entity\Espumoso;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<TipoVino>
+ * @extends ServiceEntityRepository<Espumoso>
  *
- * @method TipoVino|null find($id, $lockMode = null, $lockVersion = null)
- * @method TipoVino|null findOneBy(array $criteria, array $orderBy = null)
- * @method TipoVino[]    findAll()
- * @method TipoVino[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Espumoso|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Espumoso|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Espumoso[]    findAll()
+ * @method Espumoso[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class TipoVinoRepository extends ServiceEntityRepository
+class EspumosoRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, TipoVino::class);
+        parent::__construct($registry, Espumoso::class);
     }
 
 //    /**
-//     * @return TipoVino[] Returns an array of TipoVino objects
+//     * @return Espumoso[] Returns an array of Espumoso objects
 //     */
 //    public function findByExampleField($value): array
 //    {

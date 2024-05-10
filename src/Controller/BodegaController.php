@@ -52,7 +52,7 @@ class BodegaController extends AbstractController
             if (is_null($data)) {
                 return new JsonResponse(['status' => 'Error al decodificar el archivo json'], Response::HTTP_BAD_REQUEST);
             }
-            if (!isset($data->nombre) || empty($data->nombre) || !isset($data->direccion) || empty($data->direccion) || !isset($data->provincia) || empty($data->provincia) || !isset($data->denominacion) || empty($data->denominacion)) {
+            if (!$this->bodegaRepository->requiredFields($data)) {
                 return new JsonResponse(['status' => 'Faltan parámetros'], Response::HTTP_BAD_REQUEST);
             }
             $bodega = $this->bodegaRepository->findOneBy(['nombre' => $data->nombre]);
@@ -69,7 +69,7 @@ class BodegaController extends AbstractController
             $telefono = (!isset($data->telefono) || empty($data->telefono)) ? null : $data->telefono;
             $web = (!isset($data->web) || empty($data->web)) ? null : $data->web;
 
-            $this->bodegaRepository->new($data->nombre, $data->direccion, $poblacion, $data->provincia, $codPostal, $email, $telefono, $web, $denominacion, true);
+            $this->bodegaRepository->new($data->nombre, $data->direccion, $poblacion, $data->provincia, $codPostal, $email, $telefono, $web,$data->url, $denominacion, true);
             if (!$this->bodegaRepository->testInsert($data->nombre)) {
                 return new JsonResponse(['status' => 'La inserción de la bodega falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
@@ -98,7 +98,8 @@ class BodegaController extends AbstractController
             $email = (isset($data->email)) ?  $data->email : null;
             $telefono = (isset($data->telefono)) ? $data->telefono : null;
             $web = (isset($data->web)) ? $data->web : null;
-            if (!$this->bodegaRepository->update($bodega, $direccion, $poblacion, $provincia, $codPostal, $email, $telefono, $web, true)) {
+            $url = (isset($data->url)) ? $data->url : null;
+            if (!$this->bodegaRepository->update($bodega, $direccion, $poblacion, $provincia, $codPostal, $email, $telefono, $web, $url, true)) {
                 return new JsonResponse(['status' => 'La bodega no se ha actualizado'], Response::HTTP_BAD_REQUEST);
             }
             return new JsonResponse(['status' => 'Bodega actualizada correctamente'], Response::HTTP_OK);

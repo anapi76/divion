@@ -29,9 +29,10 @@ class BodegaRepository extends ServiceEntityRepository
         if (empty($bodegas)) {
             return null;
         }
-        $json = array();
+        $json = array('info' => array('count'=>count($bodegas)), // Agregar el número de bodegas al JSON
+        'results' => array());
         foreach ($bodegas as $bodega) {
-            $json[] = $this->bodegasJSON($bodega);
+            $json['results'][] = $this->bodegasJSON($bodega);
         }
         return $json;
     }
@@ -41,13 +42,11 @@ class BodegaRepository extends ServiceEntityRepository
         if (is_null($bodega)) {
             return null;
         }
-        $json[] = $this->bodegasJSON($bodega);
+        $json = $this->bodegasJSON($bodega);
         return $json;
     }
 
-    
-
-    public function new(string $nombre,string $direccion, ?string $poblacion, string $provincia, ?string $codPostal, ?string $email, ?string $telefono, ?string $web, Denominacion $denominacion, bool $flush): void
+    public function new(string $nombre, string $direccion, ?string $poblacion, string $provincia, ?string $codPostal, ?string $email, ?string $telefono, ?string $web, string $url, Denominacion $denominacion, bool $flush): void
     {
         try {
             $bodega = new Bodega();
@@ -59,6 +58,7 @@ class BodegaRepository extends ServiceEntityRepository
             if (!is_null($email)) $bodega->setEmail($email);
             if (!is_null($telefono)) $bodega->setTelefono($telefono);
             if (!is_null($web)) $bodega->setWeb($web);
+            $bodega->setUrl($url);
             $bodega->setDenominacion($denominacion);
             $denominacion->addBodega($bodega);
             $this->save($bodega, $flush);
@@ -67,43 +67,48 @@ class BodegaRepository extends ServiceEntityRepository
         }
     }
 
-    public function update(Bodega $bodega, ?string $direccion, ?string $poblacion, ?string $provincia, ?string $codPostal, ?string $email, ?string $telefono, ?string $web, bool $flush): bool
+    public function update(Bodega $bodega, ?string $direccion, ?string $poblacion, ?string $provincia, ?string $codPostal, ?string $email, ?string $telefono, ?string $web, ?string $url, bool $flush): bool
     {
         try {
-            $update=false;
-            if (!is_null($direccion)){
+            $update = false;
+            if (!is_null($direccion)) {
                 $bodega->setDireccion($direccion);
-                $update=true;
-            } 
-            if (!is_null($poblacion)){
-                $poblacion=(!empty($poblacion)?$poblacion:null);
-                $bodega->setPoblacion($poblacion);
-                $update=true;
-            } 
-            if (!is_null($provincia)){
-                $bodega->setProvincia($provincia);
-                $update=true;
-            } 
-            if (!is_null($codPostal)){
-                $codPostal=(!empty($codPostal)?$codPostal:null);
-                $bodega->setCodPostal($codPostal);
-                $update=true;
-            } 
-            if (!is_null($email)){
-                $email=(!empty($email)?$email:null);
-                $bodega->setEmail($email);
-                $update=true;
+                $update = true;
             }
-            if (!is_null($telefono)){
-                $telefono=(!empty($telefono)?$telefono:null);
+            if (!is_null($poblacion)) {
+                $poblacion = (!empty($poblacion) ? $poblacion : null);
+                $bodega->setPoblacion($poblacion);
+                $update = true;
+            }
+            if (!is_null($provincia)) {
+                $bodega->setProvincia($provincia);
+                $update = true;
+            }
+            if (!is_null($codPostal)) {
+                $codPostal = (!empty($codPostal) ? $codPostal : null);
+                $bodega->setCodPostal($codPostal);
+                $update = true;
+            }
+            if (!is_null($email)) {
+                $email = (!empty($email) ? $email : null);
+                $bodega->setEmail($email);
+                $update = true;
+            }
+            if (!is_null($telefono)) {
+                $telefono = (!empty($telefono) ? $telefono : null);
                 $bodega->setTelefono($telefono);
-                $update=true;
-            } 
-            if (!is_null($web)){
-                $web=(!empty($web)?$web:null);
+                $update = true;
+            }
+            if (!is_null($web)) {
+                $web = (!empty($web) ? $web : null);
                 $bodega->setWeb($web);
-                $update=true;
-            } 
+                $update = true;
+            }
+            if (!is_null($url)) {
+                $url = (!empty($url) ? $url : null);
+                $bodega->setUrl($url);
+                $update = true;
+            }
             $this->save($bodega, $flush);
             return $update;
         } catch (\Exception $e) {
@@ -119,7 +124,7 @@ class BodegaRepository extends ServiceEntityRepository
                 $this->getEntityManager()->flush();
             }
         } catch (\Exception $e) {
-            throw $e;   
+            throw $e;
         }
     }
 
@@ -167,8 +172,9 @@ class BodegaRepository extends ServiceEntityRepository
             'email' => $bodega->getEmail(),
             'telefono' => $bodega->getTelefono(),
             'web' => $bodega->getWeb(),
+            'url' => $bodega->getWeb(),
             'denominacion' => $bodega->getDenominacion()->getNombre(),
-            'vinos'=>$this->vinosJSON($bodega->getVinos())
+            'vinos' => $this->vinosJSON($bodega->getVinos())
         );
 
         return $json;
@@ -178,10 +184,16 @@ class BodegaRepository extends ServiceEntityRepository
     {
         $json = array();
         foreach ($vinos as $vino) {
-            $json[] = $vino->getNombre();
+            $json[] = array('nombre' => $vino->getNombre(), 'url' => $vino->getUrl());
         }
         return $json;
     }
+
+    public function requiredFields(Object $data): bool
+    {
+        return(isset($data->nombre) && !empty($data->nombre) && isset($data->direccion) && !empty($data->direccion) && isset($data->provincia) && !empty($data->provincia) && isset($data->url) && !empty($data->url) && isset($data->denominacion) && !empty($data->denominacion));
+    }
+
 
     //    /**
     //     * @return Bodega[] Returns an array of Bodega objects

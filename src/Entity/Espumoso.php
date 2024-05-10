@@ -2,19 +2,19 @@
 
 namespace App\Entity;
 
-use App\Repository\TipoVinoRepository;
+use App\Repository\EspumosoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: TipoVinoRepository::class)]
-#[ORM\Table(name: 'tipo_vino')]
-class TipoVino
+#[ORM\Entity(repositoryClass: EspumosoRepository::class)]
+#[ORM\Table(name: 'espumoso')]
+class Espumoso
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'idTipo')]
+    #[ORM\Column(name: 'idEspumoso')]
     private ?int $id = null;
 
     #[ORM\Column(length: 25,unique:true)]
@@ -23,7 +23,7 @@ class TipoVino
     #[ORM\Column(type: Types::TEXT)]
     private ?string $descripcion = null;
 
-    #[ORM\OneToMany(targetEntity: Vino::class, mappedBy: 'tipoVino')]
+    #[ORM\OneToMany(targetEntity: Vino::class, mappedBy: 'espumoso')]
     private Collection $vinos;
 
     public function __construct()
@@ -72,7 +72,7 @@ class TipoVino
     {
         if (!$this->vinos->contains($vino)) {
             $this->vinos->add($vino);
-            $vino->setTipoVino($this);
+            $vino->setEspumoso($this);
         }
 
         return $this;
@@ -82,8 +82,8 @@ class TipoVino
     {
         if ($this->vinos->removeElement($vino)) {
             // set the owning side to null (unless already changed)
-            if ($vino->getTipoVino() === $this) {
-                $vino->setTipoVino(null);
+            if ($vino->getEspumoso() === $this) {
+                $vino->setEspumoso(null);
             }
         }
 

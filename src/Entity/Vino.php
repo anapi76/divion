@@ -29,6 +29,9 @@ class Vino
     #[ORM\Column(length: 50)]
     private ?string $imagen = null;
 
+    #[ORM\Column(length: 50)]
+    private ?string $url = null;
+
     #[ORM\ManyToOne(inversedBy: 'vinos')]
     #[ORM\JoinColumn(name: 'idColor', referencedColumnName: 'idColor',nullable: false)]
     private ?Color $color = null;
@@ -38,8 +41,8 @@ class Vino
     private ?Azucar $azucar = null;
 
     #[ORM\ManyToOne(inversedBy: 'vinos')]
-    #[ORM\JoinColumn(name: 'idTipo', referencedColumnName: 'idTipo',nullable: false)]
-    private ?TipoVino $tipoVino = null;
+    #[ORM\JoinColumn(name: 'idEspumoso', referencedColumnName: 'idEspumoso',nullable: true)]
+    private ?Espumoso $espumoso = null;
 
     #[ORM\ManyToOne(inversedBy: 'vinos')]
     #[ORM\JoinColumn(name: 'idMaduracion', referencedColumnName: 'idMaduracion',nullable: true)]
@@ -130,6 +133,18 @@ class Vino
         return $this;
     }
 
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(?string $url): self
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
     public function getColor(): ?Color
     {
         return $this->color;
@@ -154,14 +169,14 @@ class Vino
         return $this;
     }
 
-    public function getTipoVino(): ?TipoVino
+    public function getEspumoso(): ?Espumoso
     {
-        return $this->tipoVino;
+        return $this->espumoso;
     }
 
-    public function setTipoVino(?TipoVino $tipoVino): static
+    public function setEspumoso(?Espumoso $espumoso): static
     {
-        $this->tipoVino = $tipoVino;
+        $this->espumoso = $espumoso;
 
         return $this;
     }
@@ -310,6 +325,28 @@ class Vino
             // set the owning side to null (unless already changed)
             if ($puntuacion->getVino() === $this) {
                 $puntuacion->setVino(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function addPuntuacione(PuntuacionVino $puntuacione): static
+    {
+        if (!$this->puntuaciones->contains($puntuacione)) {
+            $this->puntuaciones->add($puntuacione);
+            $puntuacione->setVino($this);
+        }
+
+        return $this;
+    }
+
+    public function removePuntuacione(PuntuacionVino $puntuacione): static
+    {
+        if ($this->puntuaciones->removeElement($puntuacione)) {
+            // set the owning side to null (unless already changed)
+            if ($puntuacione->getVino() === $this) {
+                $puntuacione->setVino(null);
             }
         }
 

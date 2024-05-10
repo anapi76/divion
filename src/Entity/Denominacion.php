@@ -41,6 +41,9 @@ class Denominacion
     #[ORM\Column(name:'descripcionVinos', type: Types::TEXT)]
     private ?string $descripcionVinos = null;
 
+    #[ORM\Column(length: 50)]
+    private ?string $url = null;
+
     #[ORM\ManyToOne(inversedBy: 'denominaciones')]
     #[ORM\JoinColumn(name: 'idRegion', referencedColumnName: 'idRegion',nullable: false)]
     private ?Region $region = null;
@@ -159,6 +162,18 @@ class Denominacion
         return $this;
     }
 
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(?string $url): self
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
     public function getRegion(): ?region
     {
         return $this->region;
@@ -231,4 +246,7 @@ class Denominacion
         return $this;
     }
 
+
+
+ 
 }

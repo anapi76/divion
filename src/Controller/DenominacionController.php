@@ -73,7 +73,7 @@ class DenominacionController extends AbstractController
             $web = (!isset($data->web) || empty($data->web)) ? null : $data->web;
             $uvas = (isset($data->uvas_permitidas) && !empty($data->uvas_permitidas)) ? $data->uvas_permitidas : null;
 
-            $this->denominacionRepository->new($data->nombre, $calificada, $creacion, $web, $data->imagen, $data->historia, $data->descripcion, $data->descripcion_vinos, $region, $uvas, true);
+            $this->denominacionRepository->new($data->nombre, $calificada, $creacion, $web, $data->imagen, $data->historia, $data->descripcion, $data->descripcion_vinos, $data->url,$region, $uvas, true);
             if (!$this->denominacionRepository->testInsert($data->nombre)) {
                 return new JsonResponse(['status' => 'La inserción de la denominación de origen falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
@@ -105,8 +105,9 @@ class DenominacionController extends AbstractController
             $historia = (isset($data->historia) && !empty($data->historia)) ? $data->historia : null;
             $descripcion = (isset($data->descripcion) && !empty($data->descripcion)) ? $data->descripcion : null;
             $descripcionVinos = (isset($data->descripcion_vinos) && !empty($data->descripcion_vinos)) ? $data->descripcion_vinos : null;
+            $url = (isset($data->url) && !empty($data->url)) ? $data->url : null;
             $uvas = (isset($data->uvas_permitidas) && !empty($data->uvas_permitidas)) ? $data->uvas_permitidas : null;
-            if (!$this->denominacionRepository->update($denominacion, $calificada, $creacion, $web, $imagen, $historia, $descripcion, $descripcionVinos, $uvas, true)) {
+            if (!$this->denominacionRepository->update($denominacion, $calificada, $creacion, $web, $imagen, $historia, $descripcion, $descripcionVinos,$url, $uvas, true)) {
                 return new JsonResponse(['status' => 'La denominación de origen no se ha actualizado'], Response::HTTP_BAD_REQUEST);
             }
             return new JsonResponse(['status' => 'Denominación de origen actualizada correctamente'], Response::HTTP_OK);

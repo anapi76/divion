@@ -34,7 +34,8 @@ class DenominacionRepository extends ServiceEntityRepository
         if (empty($denominaciones)) {
             return null;
         }
-        $json = array();
+        $json = array('info' => array('count'=>count($denominaciones)), 
+        'results' => array());
         foreach ($denominaciones as $denominacion) {
             $json['results'][] = $this->denominacionesJSON($denominacion);
         }
@@ -46,11 +47,11 @@ class DenominacionRepository extends ServiceEntityRepository
         if (is_null($denominacion)) {
             return null;
         }
-        $json[] = $this->denominacionesJSON($denominacion);
+        $json['results'][]= $this->denominacionesJSON($denominacion);
         return $json;
     }
 
-    public function new(string $nombre, bool $calificada, ?int $creacion, ?string $web, string $imagen, string $historia, string $descripcion, string $descripcionVinos, Region $region, array $uvas, bool $flush): void
+    public function new(string $nombre, bool $calificada, ?int $creacion, ?string $web, string $imagen, string $historia, string $descripcion, string $descripcionVinos, string $url, Region $region, array $uvas, bool $flush): void
     {
         try {
             $denominacion = new Denominacion();
@@ -62,6 +63,7 @@ class DenominacionRepository extends ServiceEntityRepository
             $denominacion->setHistoria($historia);
             $denominacion->setDescripcion($descripcion);
             $denominacion->setDescripcionVinos($descripcionVinos);
+            $denominacion->setUrl($url);
             $denominacion->setRegion($region);
             $this->uvaDoRepository->new($uvas, $denominacion);
             $this->save($denominacion, $flush);
@@ -70,7 +72,7 @@ class DenominacionRepository extends ServiceEntityRepository
         }
     }
 
-    public function update(Denominacion $denominacion, bool $calificada, ?int $creacion, ?string $web, ?string $imagen, ?string $historia, ?string $descripcion, ?string $descripcionVinos, ?array $uvas, bool $flush): bool
+    public function update(Denominacion $denominacion, bool $calificada, ?int $creacion, ?string $web, ?string $imagen, ?string $historia, ?string $descripcion, ?string $descripcionVinos,?string $url, ?array $uvas, bool $flush): bool
     {
         try {
             $update = false;
@@ -102,6 +104,10 @@ class DenominacionRepository extends ServiceEntityRepository
             }
             if (!is_null($descripcionVinos)) {
                 $denominacion->setDescripcionVinos($descripcionVinos);
+                $update = true;
+            }
+            if (!is_null($url)) {
+                $denominacion->setUrl($url);
                 $update = true;
             }
             if (!is_null($uvas)) {
@@ -140,6 +146,7 @@ class DenominacionRepository extends ServiceEntityRepository
             'historia' => $denominacion->getHistoria(),
             'descripcion' => $denominacion->getDescripcion(),
             'descripcion_vinos' => $denominacion->getDescripcionVinos(),
+            'url' => $denominacion->getUrl(),
             'region' => $denominacion->getRegion()->getNombre(),
             'bodegas' => $this->bodegasJSON($denominacion->getBodegas()),
             'uvas_permitidas' => $this->uvasJSON($denominacion->getUvas()),
@@ -151,7 +158,7 @@ class DenominacionRepository extends ServiceEntityRepository
     {
         $json = array();
         foreach ($bodegas as $bodega) {
-            $json[] = $bodega->getNombre();
+            $json[] = array('nombre' => $bodega->getNombre(), 'url' => $bodega->getUrl());
         }
         return $json;
     }
@@ -206,7 +213,7 @@ class DenominacionRepository extends ServiceEntityRepository
 
     public function requiredFields(Object $data): bool
     {
-        return (isset($data->nombre) && !empty($data->nombre) && isset($data->imagen) && !empty($data->imagen) && isset($data->historia) && !empty($data->historia) && isset($data->descripcion) && !empty($data->descripcion) && isset($data->descripcion_vinos) && !empty($data->descripcion_vinos) && isset($data->region) && !empty($data->region));
+        return (isset($data->nombre) && !empty($data->nombre) && isset($data->imagen) && !empty($data->imagen) && isset($data->historia) && !empty($data->historia) && isset($data->descripcion) && !empty($data->descripcion) && isset($data->descripcion_vinos) && !empty($data->descripcion_vinos) && isset($data->url) && !empty($data->url) && isset($data->region) && !empty($data->region));
     }
 
     //    /**
