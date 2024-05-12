@@ -32,6 +32,15 @@ class Denominacion
     #[ORM\Column(length: 50)]
     private ?string $imagen = null;
 
+    #[ORM\Column(name:'imagen_historia',length: 50)]
+    private ?string $imagenHistoria = null;
+
+    #[ORM\Column(name:'imagen_uva',length: 50)]
+    private ?string $imagenUva = null;
+
+    #[ORM\Column(length: 50)]
+    private ?string $logo = null;
+
     #[ORM\Column(type: Types::TEXT)]
     private ?string $historia = null;
 
@@ -122,6 +131,43 @@ class Denominacion
     public function setImagen(string $imagen): static
     {
         $this->imagen = $imagen;
+
+        return $this;
+    }
+
+    public function getLogo(): ?string
+    {
+        return $this->logo;
+    }
+
+
+    public function setLogo(?string $logo): self
+    {
+        $this->logo = $logo;
+
+        return $this;
+    }
+
+    public function getImagenHistoria(): ?string
+    {
+        return $this->imagenHistoria;
+    }
+
+    public function setImagenHistoria(?string $imagenHistoria): self
+    {
+        $this->imagenHistoria = $imagenHistoria;
+
+        return $this;
+    }
+
+    public function getImagenUva(): ?string
+    {
+        return $this->imagenUva;
+    }
+
+    public function setImagenUva(?string $imagenUva): self
+    {
+        $this->imagenUva = $imagenUva;
 
         return $this;
     }
@@ -246,7 +292,4 @@ class Denominacion
         return $this;
     }
 
-
-
- 
 }

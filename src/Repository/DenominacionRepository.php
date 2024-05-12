@@ -34,8 +34,10 @@ class DenominacionRepository extends ServiceEntityRepository
         if (empty($denominaciones)) {
             return null;
         }
-        $json = array('info' => array('count'=>count($denominaciones)), 
-        'results' => array());
+        $json = array(
+            'info' => array('count' => count($denominaciones)),
+            'results' => array()
+        );
         foreach ($denominaciones as $denominacion) {
             $json['results'][] = $this->denominacionesJSON($denominacion);
         }
@@ -47,11 +49,11 @@ class DenominacionRepository extends ServiceEntityRepository
         if (is_null($denominacion)) {
             return null;
         }
-        $json['results'][]= $this->denominacionesJSON($denominacion);
+        $json['results'][] = $this->denominacionesJSON($denominacion);
         return $json;
     }
 
-    public function new(string $nombre, bool $calificada, ?int $creacion, ?string $web, string $imagen, string $historia, string $descripcion, string $descripcionVinos, string $url, Region $region, array $uvas, bool $flush): void
+    public function new(string $nombre, bool $calificada, ?int $creacion, ?string $web, string $imagen, ?string $imagenHistoria, ?string $imagenUva, ?string $logo,string $historia, string $descripcion, string $descripcionVinos, string $url, Region $region, array $uvas, bool $flush): void
     {
         try {
             $denominacion = new Denominacion();
@@ -60,7 +62,10 @@ class DenominacionRepository extends ServiceEntityRepository
             if (!is_null($creacion)) $denominacion->setCreacion($creacion);
             if (!is_null($web)) $denominacion->setWeb($web);
             $denominacion->setImagen($imagen);
+            $denominacion->setImagenHistoria($imagenHistoria);
+            $denominacion->setImagen($logo);
             $denominacion->setHistoria($historia);
+            $denominacion->setImagenUva($imagenUva);
             $denominacion->setDescripcion($descripcion);
             $denominacion->setDescripcionVinos($descripcionVinos);
             $denominacion->setUrl($url);
@@ -72,7 +77,7 @@ class DenominacionRepository extends ServiceEntityRepository
         }
     }
 
-    public function update(Denominacion $denominacion, bool $calificada, ?int $creacion, ?string $web, ?string $imagen, ?string $historia, ?string $descripcion, ?string $descripcionVinos,?string $url, ?array $uvas, bool $flush): bool
+    public function update(Denominacion $denominacion, bool $calificada, ?int $creacion, ?string $web, ?string $imagen, ?string $imagenHistoria, ?string $imagenUva, ?string $logo, ?string $historia, ?string $descripcion, ?string $descripcionVinos, ?string $url, ?array $uvas, bool $flush): bool
     {
         try {
             $update = false;
@@ -92,6 +97,18 @@ class DenominacionRepository extends ServiceEntityRepository
             }
             if (!is_null($imagen)) {
                 $denominacion->setImagen($imagen);
+                $update = true;
+            }
+            if (!is_null($imagenHistoria)) {
+                $denominacion->setImagenHistoria($imagenHistoria);
+                $update = true;
+            }
+            if (!is_null($imagenUva)) {
+                $denominacion->setImagenUva($imagenUva);
+                $update = true;
+            }
+            if (!is_null($logo)) {
+                $denominacion->setImagen($logo);
                 $update = true;
             }
             if (!is_null($historia)) {
@@ -143,6 +160,9 @@ class DenominacionRepository extends ServiceEntityRepository
             'creacion' => $denominacion->getCreacion(),
             'web' => $denominacion->getWeb(),
             'imagen' => $denominacion->getImagen(),
+            'imagen_historia' => $denominacion->getImagenHistoria(),
+            'imagen_uva' => $denominacion->getImagenUva(),
+            'logo' => $denominacion->getLogo(),
             'historia' => $denominacion->getHistoria(),
             'descripcion' => $denominacion->getDescripcion(),
             'descripcion_vinos' => $denominacion->getDescripcionVinos(),
@@ -213,7 +233,7 @@ class DenominacionRepository extends ServiceEntityRepository
 
     public function requiredFields(Object $data): bool
     {
-        return (isset($data->nombre) && !empty($data->nombre) && isset($data->imagen) && !empty($data->imagen) && isset($data->historia) && !empty($data->historia) && isset($data->descripcion) && !empty($data->descripcion) && isset($data->descripcion_vinos) && !empty($data->descripcion_vinos) && isset($data->url) && !empty($data->url) && isset($data->region) && !empty($data->region));
+        return (isset($data->nombre) && !empty($data->nombre) && isset($data->imagen) && !empty($data->imagen)  && isset($data->imagenHistoria) && !empty($data->imagenHistoria) && isset($data->imagenUva) && !empty($data->imagenUva) && isset($data->logo) && !empty($data->logo) && isset($data->historia) && !empty($data->historia) && isset($data->descripcion) && !empty($data->descripcion) && isset($data->descripcion_vinos) && !empty($data->descripcion_vinos) && isset($data->url) && !empty($data->url) && isset($data->region) && !empty($data->region));
     }
 
     //    /**
