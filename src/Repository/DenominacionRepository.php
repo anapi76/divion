@@ -178,7 +178,7 @@ class DenominacionRepository extends ServiceEntityRepository
     {
         $json = array();
         foreach ($bodegas as $bodega) {
-            $json[] = array('nombre' => $bodega->getNombre(), 'url' => $bodega->getUrl());
+            $json[] = array('nombre' => $bodega->getNombre(), 'web' => $bodega->getWeb());
         }
         return $json;
     }

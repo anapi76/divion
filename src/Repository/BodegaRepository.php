@@ -29,8 +29,10 @@ class BodegaRepository extends ServiceEntityRepository
         if (empty($bodegas)) {
             return null;
         }
-        $json = array('info' => array('count'=>count($bodegas)), // Agregar el número de bodegas al JSON
-        'results' => array());
+        $json = array(
+            'info' => array('count' => count($bodegas)),
+            'results' => array()
+        );
         foreach ($bodegas as $bodega) {
             $json['results'][] = $this->bodegasJSON($bodega);
         }
@@ -42,7 +44,7 @@ class BodegaRepository extends ServiceEntityRepository
         if (is_null($bodega)) {
             return null;
         }
-        $json = $this->bodegasJSON($bodega);
+        $json['results'][] = $this->bodegasJSON($bodega);
         return $json;
     }
 
@@ -191,7 +193,7 @@ class BodegaRepository extends ServiceEntityRepository
 
     public function requiredFields(Object $data): bool
     {
-        return(isset($data->nombre) && !empty($data->nombre) && isset($data->direccion) && !empty($data->direccion) && isset($data->provincia) && !empty($data->provincia) && isset($data->url) && !empty($data->url) && isset($data->denominacion) && !empty($data->denominacion));
+        return (isset($data->nombre) && !empty($data->nombre) && isset($data->direccion) && !empty($data->direccion) && isset($data->provincia) && !empty($data->provincia) && isset($data->url) && !empty($data->url) && isset($data->denominacion) && !empty($data->denominacion));
     }
 
 

@@ -95,7 +95,7 @@ class VinoRepository extends ServiceEntityRepository
         if (is_null($vino)) {
             return null;
         }
-        $json = $this->vinosJSON($vino);
+        $json['results'][] = $this->vinosJSON($vino);
         return $json;
     }
 
@@ -205,7 +205,7 @@ class VinoRepository extends ServiceEntityRepository
     {
         $json = array();
         foreach ($uvas as $uva) {
-            $json[] = $uva->getUva()->getNombre();
+            $json[] =array("nombre"=>$uva->getUva()->getNombre(),"porcentaje"=>$uva->getPorcentaje());
         }
         return $json;
     }
