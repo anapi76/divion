@@ -65,7 +65,6 @@ class Maridaje
     public function removeVino(VinoMaridaje $vino): static
     {
         if ($this->vinos->removeElement($vino)) {
-            // set the owning side to null (unless already changed)
             if ($vino->getMaridaje() === $this) {
                 $vino->setMaridaje(null);
             }

@@ -21,6 +21,32 @@ class ColorRepository extends ServiceEntityRepository
         parent::__construct($registry, Color::class);
     }
 
+    public function findAllColores(): mixed
+    {
+        $colores = $this->findAll();
+        if (empty($colores)) {
+            return null;
+        }
+        $json = array(
+            'info' => array('count' => count($colores)),
+            'results' => array()
+        );
+        foreach ($colores as $color) {
+            $json['results'][] = $this->coloresJSON($color);
+        }
+        return $json;
+    }
+
+    public function coloresJSON(Color $color): mixed
+    {
+        $json= array(
+            'id' => $color->getId(),
+            'nombre' => $color->getNombre()
+        );
+
+        return $json;
+    }
+
     //    /**
     //     * @return Color[] Returns an array of Color objects
     //     */

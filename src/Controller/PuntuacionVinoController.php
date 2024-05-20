@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Puntuacion;
 use App\Entity\PuntuacionVino;
 use App\Repository\PuntuacionRepository;
 use App\Repository\PuntuacionVinoRepository;
@@ -28,7 +27,7 @@ class PuntuacionVinoController extends AbstractController
         $this->puntuacionRepository = $puntuacionRepository;
     }
 
-    #[Route('/puntuacion', name: 'app_puntuacion_all', methods: ['GET'])]
+    #[Route('/puntuacion/vino', name: 'app_puntuacion_all', methods: ['GET'])]
     public function showAll(): JsonResponse
     {
         $puntuaciones = $this->puntuacionVinoRepository->findAllPuntuaciones();
@@ -38,7 +37,7 @@ class PuntuacionVinoController extends AbstractController
         return new JsonResponse($puntuaciones, Response::HTTP_OK);
     }
 
-    #[Route('/puntuacion/{idVino}', name: 'app_puntuacion_vino', methods: ['GET'])]
+    #[Route('/puntuacion/vino/{idVino}', name: 'app_puntuacion_vino', methods: ['GET'])]
     public function show(?int $idVino = null): JsonResponse
     {
         $vino = $this->vinoRepository->find($idVino);
@@ -52,7 +51,7 @@ class PuntuacionVinoController extends AbstractController
         return new JsonResponse($puntuaciones, Response::HTTP_OK);
     }
 
-    #[Route('/puntuacion', name: 'app_puntuacion_new', methods: ['POST'])]
+    #[Route('/puntuacion/vino', name: 'app_puntuacion_new', methods: ['POST'])]
     public function add(Request $request): JsonResponse
     {
         try {
@@ -83,7 +82,7 @@ class PuntuacionVinoController extends AbstractController
         }
     }
 
-    #[Route('/puntuacion/{id}', name: 'app_puntuacion_delete', methods: ['DELETE'])]
+    #[Route('/puntuacion/vino/{id}', name: 'app_puntuacion_delete', methods: ['DELETE'])]
     public function delete(?PuntuacionVino $puntuacionVino = null): JsonResponse
     {
         try {

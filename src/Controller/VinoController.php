@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-
 use App\Entity\Vino;
 use App\Repository\BodegaRepository;
 use App\Repository\ColorRepository;
@@ -26,8 +25,14 @@ class VinoController extends AbstractController
     private VinoUvaRepository $vinoUvaRepository;
     private VinoMaridajeRepository $vinoMaridajeRepository;
 
-    public function __construct(VinoRepository $vinoRepository, BodegaRepository $bodegaRepository, ColorRepository $colorRepository, EspumosoRepository $espumosoRepository, VinoUvaRepository $vinoUvaRepository, VinoMaridajeRepository $vinoMaridajeRepository)
-    {
+    public function __construct(
+        VinoRepository $vinoRepository,
+        BodegaRepository $bodegaRepository,
+        ColorRepository $colorRepository,
+        EspumosoRepository $espumosoRepository,
+        VinoUvaRepository $vinoUvaRepository,
+        VinoMaridajeRepository $vinoMaridajeRepository
+    ) {
         $this->vinoRepository = $vinoRepository;
         $this->bodegaRepository = $bodegaRepository;
         $this->colorRepository = $colorRepository;
@@ -49,7 +54,7 @@ class VinoController extends AbstractController
     #[Route('/vino/color/{colorId}', name: 'app_vino_all_by_color', methods: ['GET'])]
     public function showAllByColor(int $colorId): JsonResponse
     {
-        $color=$this->colorRepository->find($colorId);
+        $color = $this->colorRepository->find($colorId);
         $vinos = $this->vinoRepository->findAllVinosByColor($color);
         if (is_null($vinos)) {
             return new JsonResponse(['status' => 'No existen vinos en la bd'], Response::HTTP_NOT_FOUND);
@@ -60,7 +65,7 @@ class VinoController extends AbstractController
     #[Route('/vino/espumoso/{espumosoId}', name: 'app_vino_all_by_espumoso', methods: ['GET'])]
     public function showAllByEspumoso(int $espumosoId): JsonResponse
     {
-        $espumoso=$this->espumosoRepository->find($espumosoId);
+        $espumoso = $this->espumosoRepository->find($espumosoId);
         $vinos = $this->vinoRepository->findAllVinosByEspumoso($espumoso);
         if (is_null($vinos)) {
             return new JsonResponse(['status' => 'No existen vinos en la bd'], Response::HTTP_NOT_FOUND);
@@ -77,7 +82,7 @@ class VinoController extends AbstractController
         $vinoJson = $this->vinoRepository->findvino($vino);
         return new JsonResponse($vinoJson, Response::HTTP_OK);
     }
-    
+
 
     #[Route('/vino', name: 'app_vino_new', methods: ['POST'])]
     public function add(Request $request): JsonResponse
@@ -107,7 +112,7 @@ class VinoController extends AbstractController
 
             $uvas = (isset($data->uvas) && !empty($data->uvas)) ? $data->uvas : null;
             $maridajes = (isset($data->maridajes) && !empty($data->maridajes)) ? $data->maridajes : null;
-            $this->vinoRepository->new($data->nombre, $data->descripcion, $data->notaCata, $data->imagen,$data->url, $color, $azucar, $espumoso, $maduracion, $bodega, $sabor, $cuerpo, $boca, $uvas, $maridajes, true);
+            $this->vinoRepository->new($data->nombre, $data->descripcion, $data->notaCata, $data->imagen, $data->url, $color, $azucar, $espumoso, $maduracion, $bodega, $sabor, $cuerpo, $boca, $uvas, $maridajes, true);
             if (!$this->vinoRepository->testInsert($data->nombre)) {
                 return new JsonResponse(['status' => 'La inserción del vino falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
@@ -135,7 +140,7 @@ class VinoController extends AbstractController
             $url = (isset($data->url) && !empty($data->url)) ? $data->url : null;
             $uvas = (isset($data->uvas) && !empty($data->uvas)) ? $data->uvas : null;
             $maridajes = (isset($data->maridajes) && !empty($data->maridajes)) ? $data->maridajes : null;
-            if (!$this->vinoRepository->update($vino, $descripcion, $notaCata, $imagen,$url, $uvas, $maridajes, true)) {
+            if (!$this->vinoRepository->update($vino, $descripcion, $notaCata, $imagen, $url, $uvas, $maridajes, true)) {
                 return new JsonResponse(['status' => 'El vino no se ha actualizado'], Response::HTTP_BAD_REQUEST);
             }
             return new JsonResponse(['status' => 'Vino actualizado correctamente'], Response::HTTP_OK);

@@ -4,7 +4,6 @@ namespace App\Repository;
 
 use App\Entity\Puntuacion;
 use App\Entity\PuntuacionVino;
-use App\Entity\Region;
 use App\Entity\Vino;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
