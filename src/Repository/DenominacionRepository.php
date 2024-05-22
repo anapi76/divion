@@ -63,12 +63,12 @@ class DenominacionRepository extends ServiceEntityRepository
             if (!is_null($web)) $denominacion->setWeb($web);
             $denominacion->setImagen($imagen);
             $denominacion->setImagenHistoria($imagenHistoria);
-            $denominacion->setImagen($logo);
+            $denominacion->setLogo($logo);
             $denominacion->setHistoria($historia);
             $denominacion->setImagenUva($imagenUva);
             $denominacion->setDescripcion($descripcion);
             $denominacion->setDescripcionVinos($descripcionVinos);
-            $denominacion->setUrl($url);
+            $denominacion->setUrl($url);$denominacion->setUrl($url);
             $denominacion->setRegion($region);
             $this->uvaDoRepository->new($uvas, $denominacion);
             $this->save($denominacion, $flush);
@@ -233,7 +233,7 @@ class DenominacionRepository extends ServiceEntityRepository
 
     public function requiredFields(Object $data): bool
     {
-        return (isset($data->nombre) && !empty($data->nombre) && isset($data->imagen) && !empty($data->imagen)  && isset($data->imagenHistoria) && !empty($data->imagenHistoria) && isset($data->imagenUva) && !empty($data->imagenUva) && isset($data->logo) && !empty($data->logo) && isset($data->historia) && !empty($data->historia) && isset($data->descripcion) && !empty($data->descripcion) && isset($data->descripcion_vinos) && !empty($data->descripcion_vinos) && isset($data->url) && !empty($data->url) && isset($data->region) && !empty($data->region));
+        return (isset($data->nombre) && !empty($data->nombre) && isset($data->imagen) && !empty($data->imagen)  && isset($data->imagenHistoria) && !empty($data->imagenHistoria) && isset($data->imagenUva) && !empty($data->imagenUva) && isset($data->logo) && !empty($data->logo) && isset($data->historia) && !empty($data->historia) && isset($data->descripcion) && !empty($data->descripcion) && isset($data->descripcionVinos) && !empty($data->descripcionVinos) && isset($data->url) && !empty($data->url) && isset($data->region) && !empty($data->region));
     }
 
     //    /**

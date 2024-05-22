@@ -71,9 +71,9 @@ class DenominacionController extends AbstractController
                 return new JsonResponse(['status' => 'Año de creación incorrecto'], Response::HTTP_BAD_REQUEST);
             }
             $web = (!isset($data->web) || empty($data->web)) ? null : $data->web;
-            $uvas = (isset($data->uvas_permitidas) && !empty($data->uvas_permitidas)) ? $data->uvas_permitidas : null;
+            $uvas = (isset($data->uvasPermitidas) && !empty($data->uvasPermitidas)) ? $data->uvasPermitidas : null;
 
-            $this->denominacionRepository->new($data->nombre, $calificada, $creacion, $web, $data->imagen, $data->imagen_historia, $data->imagen_uva, $data->logo, $data->historia, $data->descripcion, $data->descripcion_vinos, $data->url, $region, $uvas, true);
+            $this->denominacionRepository->new($data->nombre, $calificada, $creacion, $web, $data->imagen, $data->imagenHistoria, $data->imagenUva, $data->logo, $data->historia, $data->descripcion, $data->descripcionVinos, $data->url, $region, $uvas, true);
             if (!$this->denominacionRepository->testInsert($data->nombre)) {
                 return new JsonResponse(['status' => 'La inserción de la denominación de origen falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }

@@ -49,6 +49,18 @@ class VinoMaridajeRepository extends ServiceEntityRepository
         }
     }
 
+    public function remove(VinoMaridaje $vinoMaridaje, bool $flush = false): void
+    {
+        try {
+            $this->getEntityManager()->remove($vinoMaridaje);
+            if ($flush) {
+                $this->getEntityManager()->flush();
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
     //    /**
     //     * @return VinoMaridaje[] Returns an array of VinoMaridaje objects
     //     */

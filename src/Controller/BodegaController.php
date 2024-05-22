@@ -68,7 +68,6 @@ class BodegaController extends AbstractController
             $email = (!isset($data->email) || empty($data->email)) ? null : $data->email;
             $telefono = (!isset($data->telefono) || empty($data->telefono)) ? null : $data->telefono;
             $web = (!isset($data->web) || empty($data->web)) ? null : $data->web;
-
             $this->bodegaRepository->new($data->nombre, $data->direccion, $poblacion, $data->provincia, $codPostal, $email, $telefono, $web,$data->url, $denominacion, true);
             if (!$this->bodegaRepository->testInsert($data->nombre)) {
                 return new JsonResponse(['status' => 'La inserción de la bodega falló'], Response::HTTP_INTERNAL_SERVER_ERROR);

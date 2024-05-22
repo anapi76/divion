@@ -104,11 +104,11 @@ class VinoController extends AbstractController
                 return new JsonResponse(['status' => 'La bodega no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
             }
             $maduracion = (isset($data->maduracion) && !empty($data->maduracion)) ? $this->vinoRepository->isValidMaduracion($data->maduracion) : null;
-            $azucar = (isset($data->azucar) && !empty($data->azucar)) ? $this->vinoRepository->validateAzucar($data->azucar) : null;
-            $sabor = (isset($data->sabor) && !empty($data->sabor)) ? $this->vinoRepository->validateSabor($data->sabor) : null;
-            $cuerpo = (isset($data->cuerpo) && !empty($data->cuerpo)) ? $this->vinoRepository->validateCuerpo($data->cuerpo) : null;
-            $boca = (isset($data->boca) && !empty($data->boca)) ? $this->vinoRepository->validateBoca($data->boca) : null;
-            $espumoso = (isset($data->espumoso) && !empty($data->espumoso)) ? $this->espumosoRepository->validateEspumoso($data->espumoso) : null;
+            $azucar = (isset($data->azucar) && !empty($data->azucar)) ? $this->vinoRepository->isValidAzucar($data->azucar) : null;
+            $sabor = (isset($data->sabor) && !empty($data->sabor)) ? $this->vinoRepository->isValidSabor($data->sabor) : null;
+            $cuerpo = (isset($data->cuerpo) && !empty($data->cuerpo)) ? $this->vinoRepository->isValidCuerpo($data->cuerpo) : null;
+            $boca = (isset($data->boca) && !empty($data->boca)) ? $this->vinoRepository->isValidBoca($data->boca) : null;
+            $espumoso = (isset($data->espumoso) && !empty($data->espumoso)) ? $this->espumosoRepository->isValidEspumoso($data->espumoso) : null;
 
             $uvas = (isset($data->uvas) && !empty($data->uvas)) ? $data->uvas : null;
             $maridajes = (isset($data->maridajes) && !empty($data->maridajes)) ? $data->maridajes : null;
@@ -158,15 +158,15 @@ class VinoController extends AbstractController
                 return new JsonResponse(['status' => 'El vino no existe en la bd'], Response::HTTP_NOT_FOUND);
             }
             if (count($vino->getUvas()) > 0) {
-                foreach ($vino->getUvas() as $uvaDo) {
-                    $vino->removeUva($uvaDo);
-                    $this->vinoUvaRepository->remove($uvaDo);
+                foreach ($vino->getUvas() as $vinoUva) {
+                    $vino->removeUva($vinoUva);
+                    $this->vinoUvaRepository->remove($vinoUva);
                 }
             }
             if (count($vino->getMaridajes()) > 0) {
                 foreach ($vino->getMaridajes() as $vinoMaridaje) {
                     $vino->removeMaridaje($vinoMaridaje);
-                    $this->vinoMaridajeRepository->remove($uvaDo);
+                    $this->vinoMaridajeRepository->remove($vinoMaridaje);
                 }
             }
             $this->vinoRepository->remove($vino, true);

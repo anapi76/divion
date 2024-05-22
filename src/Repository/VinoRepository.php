@@ -99,7 +99,7 @@ class VinoRepository extends ServiceEntityRepository
         return $json;
     }
 
-    public function new(string $nombre, string $descripcion, string $notaCata, string $imagen, string $url, Color $color, ?Azucar $azucar, Espumoso $espumoso, ?Maduracion $maduracion, Bodega $bodega, ?Sabor $sabor, ?Cuerpo $cuerpo, ?Boca $boca, array $uvas, array $maridajes, bool $flush): void
+    public function new(string $nombre, string $descripcion, string $notaCata, string $imagen, string $url, Color $color, ?Azucar $azucar, ?Espumoso $espumoso, ?Maduracion $maduracion, Bodega $bodega, ?Sabor $sabor, ?Cuerpo $cuerpo, ?Boca $boca, array $uvas, array $maridajes, bool $flush): void
     {
         try {
             $vino = new Vino();
@@ -159,6 +159,7 @@ class VinoRepository extends ServiceEntityRepository
             throw $e;
         }
     }
+    
     public function remove(Vino $vino, bool $flush = false): void
     {
         try {
@@ -179,6 +180,7 @@ class VinoRepository extends ServiceEntityRepository
         $cuerpo = ($vino->getCuerpo() == null) ? null : $vino->getCuerpo()->getNombre();
         $boca = ($vino->getBoca() == null) ? null : $vino->getBoca()->getNombre();
         $espumoso = ($vino->getEspumoso() == null) ? null : $vino->getEspumoso()->getNombre();
+        $bodega = ($vino->getBodega() == null) ? null : $vino->getBodega()->getNombre();
         $json = array(
             'id' => $vino->getId(),
             'nombre' => $vino->getNombre(),
@@ -192,6 +194,7 @@ class VinoRepository extends ServiceEntityRepository
             'maduracion' => $maduracion,
             'sabor' => $sabor,
             'cuerpo' => $cuerpo,
+            'bodega' => $bodega,
             'boca' => $boca,
             'uvas' => $this->uvasJSON($vino->getUvas()),
             'maridajes' => $this->maridajesJSON($vino->getMaridajes()),
@@ -257,6 +260,7 @@ class VinoRepository extends ServiceEntityRepository
     public function testDelete(string $nombre): bool
     {
         $entidad = $this->findOneBy(['nombre' => $nombre]);
+       
         if (empty($entidad))
             return true;
         else {

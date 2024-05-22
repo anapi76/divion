@@ -49,6 +49,18 @@ class VinoUvaRepository extends ServiceEntityRepository
         }
     }
 
+    public function remove(VinoUva $vinoUva, bool $flush = false): void
+    {
+        try {
+            $this->getEntityManager()->remove($vinoUva);
+            if ($flush) {
+                $this->getEntityManager()->flush();
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
     //    /**
     //     * @return VinoUva[] Returns an array of VinoUva objects
     //     */
