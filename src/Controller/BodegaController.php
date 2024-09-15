@@ -3,8 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Bodega;
+use App\Exception\DenominationNotFoundException;
+use App\Exception\InvalidParamsException;
+use App\Exception\NameAlreadyExistException;
+use App\Exception\WineryCantDeleteException;
 use App\Repository\BodegaRepository;
-use App\Repository\DenominacionRepository;
+use App\Service\BodegaService;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,21 +20,18 @@ class BodegaController extends AbstractController
 {
 
     private BodegaRepository $bodegaRepository;
-    private DenominacionRepository $denominacionRepository;
+    private BodegaService $bodegaService;
 
-    public function __construct(BodegaRepository $bodegaRepository, DenominacionRepository $denominacionRepository)
+    public function __construct(BodegaService $bodegaService, BodegaRepository $bodegaRepository)
     {
         $this->bodegaRepository = $bodegaRepository;
-        $this->denominacionRepository = $denominacionRepository;
+        $this->bodegaService = $bodegaService;
     }
 
     #[Route('/bodega', name: 'app_bodega_all', methods: ['GET'])]
     public function showAll(): JsonResponse
     {
-        $bodegas = $this->bodegaRepository->findAllBodegas();
-        if (is_null($bodegas)) {
-            return new JsonResponse(['status' => 'No existen bodegas en la bd'], Response::HTTP_NOT_FOUND);
-        }
+        $bodegas = $this->bodegaService->findAllBodegas();
         return new JsonResponse($bodegas, Response::HTTP_OK);
     }
 
@@ -40,7 +41,7 @@ class BodegaController extends AbstractController
         if (is_null($bodega)) {
             return new JsonResponse(['status' => 'La bodega no existe en la bd'], Response::HTTP_NOT_FOUND);
         }
-        $bodegaJson = $this->bodegaRepository->findbodega($bodega);
+        $bodegaJson = $this->bodegaService->findbodega($bodega);
         return new JsonResponse($bodegaJson, Response::HTTP_OK);
     }
 
@@ -48,31 +49,21 @@ class BodegaController extends AbstractController
     public function add(Request $request): JsonResponse
     {
         try {
-            $data = json_decode($request->getContent());
+            $data = json_decode($request->getContent(), true);
             if (is_null($data)) {
                 return new JsonResponse(['status' => 'Error al decodificar el archivo json'], Response::HTTP_BAD_REQUEST);
             }
-            if (!$this->bodegaRepository->requiredFields($data)) {
-                return new JsonResponse(['status' => 'Faltan parámetros'], Response::HTTP_BAD_REQUEST);
-            }
-            $bodega = $this->bodegaRepository->findOneBy(['nombre' => $data->nombre]);
-            if (!is_null($bodega)) {
-                return new JsonResponse(['status' => 'El nombre ya existe en la bd'], Response::HTTP_BAD_REQUEST);
-            }
-            $denominacion = $this->denominacionRepository->find($data->denominacion);
-            if (is_null($denominacion)) {
-                return new JsonResponse(['status' => 'La denominación de origen no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
-            }
-            $poblacion = (!isset($data->poblacion) || empty($data->poblacion)) ? null : $data->poblacion;
-            $codPostal = (!isset($data->cod_postal) || empty($data->cod_postal)) ? null : $data->cod_postal;
-            $email = (!isset($data->email) || empty($data->email)) ? null : $data->email;
-            $telefono = (!isset($data->telefono) || empty($data->telefono)) ? null : $data->telefono;
-            $web = (!isset($data->web) || empty($data->web)) ? null : $data->web;
-            $this->bodegaRepository->new($data->nombre, $data->direccion, $poblacion, $data->provincia, $codPostal, $email, $telefono, $web,$data->url, $denominacion, true);
-            if (!$this->bodegaRepository->testInsert($data->nombre)) {
+            $this->bodegaService->new($data);
+            if (!$this->bodegaService->testInsert($data['nombre'])) {
                 return new JsonResponse(['status' => 'La inserción de la bodega falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
             return new JsonResponse(['status' => 'Bodega insertada correctamente'], Response::HTTP_CREATED);
+        } catch (InvalidParamsException $e) {
+            return new JsonResponse(['status' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (NameAlreadyExistException $e) {
+            return new JsonResponse(['status' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (DenominationNotFoundException $e) {
+            return new JsonResponse(['status' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (Exception $e) {
             $msg = 'Error del servidor: ' . $e->getMessage();
             return new JsonResponse(['status' => $msg], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -83,25 +74,17 @@ class BodegaController extends AbstractController
     public function update(Request $request, ?Bodega $bodega = null): JsonResponse
     {
         try {
-            $data = json_decode($request->getContent());
+            $data = json_decode($request->getContent(), true);
             if (is_null($data)) {
                 return new JsonResponse(['status' => 'Error al decodificar el archivo json'], Response::HTTP_BAD_REQUEST);
             }
             if (is_null($bodega)) {
-                return new JsonResponse(['status' => "La bodega no existe en la bd"], Response::HTTP_NOT_FOUND);
+                return new JsonResponse(['status' => 'La bodega no existe en la bd'], Response::HTTP_BAD_REQUEST);
             }
-            $direccion = (isset($data->direccion) && !empty($data->direccion)) ? $data->direccion : null;
-            $poblacion = (isset($data->poblacion)) ? $data->poblacion : null;
-            $provincia = (isset($data->provincia) && !empty($data->provincia)) ? $data->provincia : null;
-            $codPostal = (isset($data->cod_postal)) ? $data->cod_postal : null;
-            $email = (isset($data->email)) ?  $data->email : null;
-            $telefono = (isset($data->telefono)) ? $data->telefono : null;
-            $web = (isset($data->web)) ? $data->web : null;
-            $url = (isset($data->url)) ? $data->url : null;
-            if (!$this->bodegaRepository->update($bodega, $direccion, $poblacion, $provincia, $codPostal, $email, $telefono, $web, $url, true)) {
-                return new JsonResponse(['status' => 'La bodega no se ha actualizado'], Response::HTTP_BAD_REQUEST);
-            }
+            $this->bodegaService->update($data, $bodega);
             return new JsonResponse(['status' => 'Bodega actualizada correctamente'], Response::HTTP_OK);
+        } catch (InvalidParamsException $e) {
+            return new JsonResponse(['status' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (Exception $e) {
             $msg = 'Error del servidor: ' . $e->getMessage();
             return new JsonResponse(['status' => $msg], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -115,15 +98,14 @@ class BodegaController extends AbstractController
             if (is_null($bodega)) {
                 return new JsonResponse(['status' => 'La bodega no existe en la bd'], Response::HTTP_NOT_FOUND);
             }
-            if (count($bodega->getVinos()) > 0) {
-                return new JsonResponse(['status' => 'La bodega no puede ser borrada, tiene vinos asociados'], Response::HTTP_BAD_REQUEST);
-            }
-            $this->bodegaRepository->remove($bodega, true);
-            if ($this->bodegaRepository->testDelete($bodega->getNombre())) {
+            $this->bodegaService->delete($bodega);
+            if ($this->bodegaService->testDelete($bodega->getNombre())) {
                 return new JsonResponse('La bodega ha sido borrada correctamente', Response::HTTP_OK);
             } else {
                 return new JsonResponse(['status' => 'La eliminación de la bodega falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
+        } catch (WineryCantDeleteException $e) {
+            return new JsonResponse(['status' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (Exception $e) {
             $msg = 'Error del servidor: ' . $e->getMessage();
             return new JsonResponse(['status' => $msg], Response::HTTP_INTERNAL_SERVER_ERROR);
