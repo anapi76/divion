@@ -162,7 +162,12 @@ class BodegaRepository extends ServiceEntityRepository
         }
     }
 
-    public function bodegasJSON(Bodega $bodega): mixed
+    public function requiredFields(Object $data): bool
+    {
+        return (isset($data->nombre) && !empty($data->nombre) && isset($data->direccion) && !empty($data->direccion) && isset($data->provincia) && !empty($data->provincia) && isset($data->url) && !empty($data->url) && isset($data->denominacion) && !empty($data->denominacion));
+    }
+
+    private function bodegasJSON(Bodega $bodega): mixed
     {
         $json = array(
             'id' => $bodega->getId(),
@@ -182,7 +187,7 @@ class BodegaRepository extends ServiceEntityRepository
         return $json;
     }
 
-    public function vinosJSON(Collection $vinos): mixed
+    private function vinosJSON(Collection $vinos): mixed
     {
         $json = array();
         foreach ($vinos as $vino) {
@@ -190,12 +195,6 @@ class BodegaRepository extends ServiceEntityRepository
         }
         return $json;
     }
-
-    public function requiredFields(Object $data): bool
-    {
-        return (isset($data->nombre) && !empty($data->nombre) && isset($data->direccion) && !empty($data->direccion) && isset($data->provincia) && !empty($data->provincia) && isset($data->url) && !empty($data->url) && isset($data->denominacion) && !empty($data->denominacion));
-    }
-
 
     //    /**
     //     * @return Bodega[] Returns an array of Bodega objects

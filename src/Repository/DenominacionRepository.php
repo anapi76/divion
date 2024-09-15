@@ -150,48 +150,6 @@ class DenominacionRepository extends ServiceEntityRepository
         }
     }
 
-    public function denominacionesJSON(Denominacion $denominacion): mixed
-    {
-        $calificada = ($denominacion->isCalificada()) ? 'Denominación de origen calificada' : '';
-        $json = array(
-            'id' => $denominacion->getId(),
-            'nombre' => $denominacion->getNombre(),
-            'calificada' => $calificada,
-            'creacion' => $denominacion->getCreacion(),
-            'web' => $denominacion->getWeb(),
-            'imagen' => $denominacion->getImagen(),
-            'imagen_historia' => $denominacion->getImagenHistoria(),
-            'imagen_uva' => $denominacion->getImagenUva(),
-            'logo' => $denominacion->getLogo(),
-            'historia' => $denominacion->getHistoria(),
-            'descripcion' => $denominacion->getDescripcion(),
-            'descripcion_vinos' => $denominacion->getDescripcionVinos(),
-            'url' => $denominacion->getUrl(),
-            'region' => $denominacion->getRegion()->getNombre(),
-            'bodegas' => $this->bodegasJSON($denominacion->getBodegas()),
-            'uvas_permitidas' => $this->uvasJSON($denominacion->getUvas()),
-        );
-        return $json;
-    }
-
-    public function bodegasJSON(Collection $bodegas): mixed
-    {
-        $json = array();
-        foreach ($bodegas as $bodega) {
-            $json[] = array('nombre' => $bodega->getNombre(), 'web' => $bodega->getWeb());
-        }
-        return $json;
-    }
-
-    public function uvasJSON(Collection $uvas): mixed
-    {
-        $json = array();
-        foreach ($uvas as $uva) {
-            $json[] = $uva->getUva()->getNombre();
-        }
-        return $json;
-    }
-
     public function save(Denominacion $denominacion, bool $flush = false): void
     {
         try {
@@ -234,6 +192,48 @@ class DenominacionRepository extends ServiceEntityRepository
     public function requiredFields(Object $data): bool
     {
         return (isset($data->nombre) && !empty($data->nombre) && isset($data->imagen) && !empty($data->imagen)  && isset($data->imagenHistoria) && !empty($data->imagenHistoria) && isset($data->imagenUva) && !empty($data->imagenUva) && isset($data->logo) && !empty($data->logo) && isset($data->historia) && !empty($data->historia) && isset($data->descripcion) && !empty($data->descripcion) && isset($data->descripcionVinos) && !empty($data->descripcionVinos) && isset($data->url) && !empty($data->url) && isset($data->region) && !empty($data->region));
+    }
+
+    private function denominacionesJSON(Denominacion $denominacion): mixed
+    {
+        $calificada = ($denominacion->isCalificada()) ? 'Denominación de origen calificada' : '';
+        $json = array(
+            'id' => $denominacion->getId(),
+            'nombre' => $denominacion->getNombre(),
+            'calificada' => $calificada,
+            'creacion' => $denominacion->getCreacion(),
+            'web' => $denominacion->getWeb(),
+            'imagen' => $denominacion->getImagen(),
+            'imagen_historia' => $denominacion->getImagenHistoria(),
+            'imagen_uva' => $denominacion->getImagenUva(),
+            'logo' => $denominacion->getLogo(),
+            'historia' => $denominacion->getHistoria(),
+            'descripcion' => $denominacion->getDescripcion(),
+            'descripcion_vinos' => $denominacion->getDescripcionVinos(),
+            'url' => $denominacion->getUrl(),
+            'region' => $denominacion->getRegion()->getNombre(),
+            'bodegas' => $this->bodegasJSON($denominacion->getBodegas()),
+            'uvas_permitidas' => $this->uvasJSON($denominacion->getUvas()),
+        );
+        return $json;
+    }
+
+    private function bodegasJSON(Collection $bodegas): mixed
+    {
+        $json = array();
+        foreach ($bodegas as $bodega) {
+            $json[] = array('nombre' => $bodega->getNombre(), 'web' => $bodega->getWeb());
+        }
+        return $json;
+    }
+
+    private function uvasJSON(Collection $uvas): mixed
+    {
+        $json = array();
+        foreach ($uvas as $uva) {
+            $json[] = $uva->getUva()->getNombre();
+        }
+        return $json;
     }
 
     //    /**

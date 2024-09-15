@@ -37,7 +37,7 @@ class ColorRepository extends ServiceEntityRepository
         return $json;
     }
 
-    public function coloresJSON(Color $color): mixed
+    private function coloresJSON(Color $color): mixed
     {
         $json= array(
             'id' => $color->getId(),

@@ -23,15 +23,16 @@ class PuntuacionVinoRepository extends ServiceEntityRepository
         parent::__construct($registry, PuntuacionVino::class);
     }
 
-    public function findAllPuntuaciones(): mixed
+    public function findAllOrderedByPuntuaciones($campo): mixed
     {
-        $puntuaciones = $this->findAll();
+        $puntuaciones = $this->findBy([], [$campo=> 'DESC']);
         if (empty($puntuaciones)) {
             return null;
         }
-        $json = array();
+        $json = array('info' => array('count'=>count($puntuaciones)), 
+        'results' => array());
         foreach ($puntuaciones as $puntuacion) {
-            $json[] = $this->puntuacionJSON($puntuacion);
+            $json['results'][] = $this->puntuacionJSON($puntuacion);
         }
         return $json;
     }
@@ -55,6 +56,8 @@ class PuntuacionVinoRepository extends ServiceEntityRepository
             $puntuacionVino = new PuntuacionVino();
             $puntuacionVino->setVino($vino);
             $puntuacionVino->setPuntuacion($puntuacion);
+            $puntos=$vino->getPuntos();
+            $vino->setPuntos($puntos+$puntuacion->getPuntos());
             if (!is_null($comentarios)) $puntuacionVino->setComentarios($comentarios);
             if (!is_null($usuario)) $puntuacionVino->setUsuario($usuario);
             return ($this->save($puntuacionVino, $flush));

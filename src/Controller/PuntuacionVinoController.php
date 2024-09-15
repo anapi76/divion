@@ -30,7 +30,7 @@ class PuntuacionVinoController extends AbstractController
     #[Route('/puntuacion/vino', name: 'app_puntuacion_all', methods: ['GET'])]
     public function showAll(): JsonResponse
     {
-        $puntuaciones = $this->puntuacionVinoRepository->findAllPuntuaciones();
+        $puntuaciones = $this->puntuacionVinoRepository->findAllOrderedByPuntuaciones('puntuacion');
         if (is_null($puntuaciones)) {
             return new JsonResponse(['status' => 'No existen puntuaciones en la bd'], Response::HTTP_NOT_FOUND);
         }
@@ -70,7 +70,7 @@ class PuntuacionVinoController extends AbstractController
             if (is_null($puntuacion)) {
                 return new JsonResponse(['status' => 'La puntuación no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
             }
-            $comentarios = (isset($data->comentarios) && !empty($data->comentarios)) ? $data->comentarios : true;
+            $comentarios = (isset($data->comentarios) && !empty($data->comentarios)) ? $data->comentarios : null;
             $usuario = (isset($data->usuario)  && !empty($data->usuario)) ? $data->usuario : null;
             if (!$this->puntuacionVinoRepository->new($vino, $puntuacion, $comentarios, $usuario, true)) {
                 return new JsonResponse(['status' => 'La inserción de la puntuación falló'], Response::HTTP_INTERNAL_SERVER_ERROR);

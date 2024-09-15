@@ -32,6 +32,9 @@ class Vino
     #[ORM\Column(length: 50)]
     private ?string $url = null;
 
+    #[ORM\Column(options:["default"=>0])]
+    private ?int $puntos = null;
+
     #[ORM\ManyToOne(inversedBy: 'vinos')]
     #[ORM\JoinColumn(name: 'idColor', referencedColumnName: 'idColor',nullable: false)]
     private ?Color $color = null;
@@ -141,6 +144,18 @@ class Vino
     public function setUrl(?string $url): self
     {
         $this->url = $url;
+
+        return $this;
+    }
+
+    public function getPuntos(): ?int
+    {
+        return $this->puntos;
+    }
+
+    public function setPuntos(?int $puntos): self
+    {
+        $this->puntos = $puntos;
 
         return $this;
     }
@@ -352,4 +367,5 @@ class Vino
 
         return $this;
     }
+
 }

@@ -51,6 +51,16 @@ class VinoController extends AbstractController
         return new JsonResponse($vinos, Response::HTTP_OK);
     }
 
+    #[Route('/ranking', name: 'app_vino_ranking', methods: ['GET'])]
+    public function showRanking(): JsonResponse
+    {
+        $vinos = $this->vinoRepository->findRanking();
+        if (is_null($vinos)) {
+            return new JsonResponse(['status' => 'No existen vinos en la bd'], Response::HTTP_NOT_FOUND);
+        }
+        return new JsonResponse($vinos, Response::HTTP_OK);
+    }
+
     #[Route('/vino/color/{colorId}', name: 'app_vino_all_by_color', methods: ['GET'])]
     public function showAllByColor(int $colorId): JsonResponse
     {

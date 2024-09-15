@@ -90,6 +90,20 @@ class VinoRepository extends ServiceEntityRepository
         return $json;
     }
 
+    public function findRanking(): mixed
+    {
+        $vinos=$this->findBy([], ['puntos' => 'DESC'], 10);
+        if (empty($vinos)) {
+            return null;
+        }
+        $json = array('info' => array('count'=>count($vinos)), 
+        'results' => array());
+        foreach ($vinos as $vino) {
+            $json['results'][] = $this->vinosJSON($vino);
+        }
+        return $json;
+    }
+
     public function findVino(Vino $vino): mixed
     {
         if (is_null($vino)) {
@@ -170,69 +184,6 @@ class VinoRepository extends ServiceEntityRepository
         } catch (\Exception $e) {
             throw $e;
         }
-    }
-
-    public function vinosJSON(Vino $vino): mixed
-    {
-        $azucar = ($vino->getAzucar() == null) ? null : $vino->getAzucar()->getNombre();
-        $maduracion = ($vino->getMaduracion() == null) ? null : $vino->getMaduracion()->getNombre();
-        $sabor = ($vino->getSabor() == null) ? null : $vino->getSabor()->getNombre();
-        $cuerpo = ($vino->getCuerpo() == null) ? null : $vino->getCuerpo()->getNombre();
-        $boca = ($vino->getBoca() == null) ? null : $vino->getBoca()->getNombre();
-        $espumoso = ($vino->getEspumoso() == null) ? null : $vino->getEspumoso()->getNombre();
-        $bodega = ($vino->getBodega() == null) ? null : $vino->getBodega()->getNombre();
-        $json = array(
-            'id' => $vino->getId(),
-            'nombre' => $vino->getNombre(),
-            'descripcion' => $vino->getDescripcion(),
-            'notaCata' => $vino->getNotaCata(),
-            'imagen' => $vino->getImagen(),
-            'url' => $vino->getUrl(),
-            'color' => $vino->getColor()->getNombre(),
-            'azucar' => $azucar,
-            'espumoso' => $espumoso,
-            'maduracion' => $maduracion,
-            'sabor' => $sabor,
-            'cuerpo' => $cuerpo,
-            'bodega' => $bodega,
-            'boca' => $boca,
-            'uvas' => $this->uvasJSON($vino->getUvas()),
-            'maridajes' => $this->maridajesJSON($vino->getMaridajes()),
-            'puntuaciones' => $this->puntuacionesJSON($vino->getPuntuaciones())
-        );
-
-        return $json;
-    }
-
-    public function uvasJSON(Collection $uvas): mixed
-    {
-        $json = array();
-        foreach ($uvas as $uva) {
-            $json[] =array("nombre"=>$uva->getUva()->getNombre(),"porcentaje"=>$uva->getPorcentaje());
-        }
-        return $json;
-    }
-
-    public function maridajesJSON(Collection $maridajes): mixed
-    {
-        $json = array();
-        foreach ($maridajes as $maridaje) {
-            $json[] = $maridaje->getMaridaje()->getNombre();
-        }
-        return $json;
-    }
-
-    public function puntuacionesJSON(Collection $puntuaciones): mixed
-    {
-        $json = array();
-        foreach ($puntuaciones as $puntuacion) {
-            $json[] = array(
-                'puntos'=>$puntuacion->getPuntuacion()->getPuntos(),
-                'descripcion'=>$puntuacion->getPuntuacion()->getDescripcion(),
-                'comentarios'=>$puntuacion->getComentarios()
-            );
-        }
-        return $json;
     }
 
     public function save(Vino $vino, bool $flush = false): void
@@ -331,6 +282,72 @@ class VinoRepository extends ServiceEntityRepository
             return new JsonResponse(['status' => 'Campo incorrecto'], Response::HTTP_BAD_REQUEST);
         }
         return $espumoso;
+    }
+
+    private function vinosJSON(Vino $vino): mixed
+    {
+        $azucar = ($vino->getAzucar() == null) ? null : $vino->getAzucar()->getNombre();
+        $maduracion = ($vino->getMaduracion() == null) ? null : $vino->getMaduracion()->getNombre();
+        $sabor = ($vino->getSabor() == null) ? null : $vino->getSabor()->getNombre();
+        $cuerpo = ($vino->getCuerpo() == null) ? null : $vino->getCuerpo()->getNombre();
+        $boca = ($vino->getBoca() == null) ? null : $vino->getBoca()->getNombre();
+        $espumoso = ($vino->getEspumoso() == null) ? null : $vino->getEspumoso()->getNombre();
+        $bodega = ($vino->getBodega() == null) ? null : $vino->getBodega();
+        $do=($bodega->getDenominacion() == null) ? null : $bodega->getDenominacion()->getNombre();
+        $json = array(
+            'id' => $vino->getId(),
+            'nombre' => $vino->getNombre(),
+            'descripcion' => $vino->getDescripcion(),
+            'notaCata' => $vino->getNotaCata(),
+            'imagen' => $vino->getImagen(),
+            'url' => $vino->getUrl(),
+            'color' => $vino->getColor()->getNombre(),
+            'azucar' => $azucar,
+            'espumoso' => $espumoso,
+            'maduracion' => $maduracion,
+            'sabor' => $sabor,
+            'cuerpo' => $cuerpo,
+            'bodega' => $bodega->getNombre(),
+            'do'=>$do,
+            'boca' => $boca,
+            'uvas' => $this->uvasJSON($vino->getUvas()),
+            'maridajes' => $this->maridajesJSON($vino->getMaridajes()),
+            'puntos'=>$vino->getPuntos(),
+            'puntuaciones' => $this->puntuacionesJSON($vino->getPuntuaciones())
+        );
+
+        return $json;
+    }
+
+    private function uvasJSON(Collection $uvas): mixed
+    {
+        $json = array();
+        foreach ($uvas as $uva) {
+            $json[] =array("nombre"=>$uva->getUva()->getNombre(),"porcentaje"=>$uva->getPorcentaje());
+        }
+        return $json;
+    }
+
+    private function maridajesJSON(Collection $maridajes): mixed
+    {
+        $json = array();
+        foreach ($maridajes as $maridaje) {
+            $json[] = $maridaje->getMaridaje()->getNombre();
+        }
+        return $json;
+    }
+
+    private function puntuacionesJSON(Collection $puntuaciones): mixed
+    {
+        $json = array();
+        foreach ($puntuaciones as $puntuacion) {
+            $json[] = array(
+                'puntos'=>$puntuacion->getPuntuacion()->getPuntos(),
+                'descripcion'=>$puntuacion->getPuntuacion()->getDescripcion(),
+                'comentarios'=>$puntuacion->getComentarios()
+            );
+        }
+        return $json;
     }
 
     //    /**
