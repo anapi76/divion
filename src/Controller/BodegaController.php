@@ -6,8 +6,7 @@ use App\Entity\Bodega;
 use App\Exception\DenominationNotFoundException;
 use App\Exception\InvalidParamsException;
 use App\Exception\NameAlreadyExistException;
-use App\Exception\WineryCantDeleteException;
-use App\Repository\BodegaRepository;
+use App\Exception\WineryDeletionException;
 use App\Service\BodegaService;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,13 +17,10 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class BodegaController extends AbstractController
 {
-
-    private BodegaRepository $bodegaRepository;
     private BodegaService $bodegaService;
 
-    public function __construct(BodegaService $bodegaService, BodegaRepository $bodegaRepository)
+    public function __construct(BodegaService $bodegaService)
     {
-        $this->bodegaRepository = $bodegaRepository;
         $this->bodegaService = $bodegaService;
     }
 
@@ -98,13 +94,13 @@ class BodegaController extends AbstractController
             if (is_null($bodega)) {
                 return new JsonResponse(['status' => 'La bodega no existe en la bd'], Response::HTTP_NOT_FOUND);
             }
-            $this->bodegaService->delete($bodega);
+            $this->bodegaService->delete($bodega, true);
             if ($this->bodegaService->testDelete($bodega->getNombre())) {
                 return new JsonResponse('La bodega ha sido borrada correctamente', Response::HTTP_OK);
             } else {
                 return new JsonResponse(['status' => 'La eliminación de la bodega falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-        } catch (WineryCantDeleteException $e) {
+        } catch (WineryDeletionException $e) {
             return new JsonResponse(['status' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (Exception $e) {
             $msg = 'Error del servidor: ' . $e->getMessage();

@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use RuntimeException;
 
-class WineryCantDeleteException extends RuntimeException
+class RegionNotFoundException extends RuntimeException
 {
     public function __construct(string $message)
     {

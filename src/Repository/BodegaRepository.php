@@ -23,25 +23,17 @@ class BodegaRepository extends ServiceEntityRepository
 
     public function save(Bodega $bodega, bool $flush = false): void
     {
-        try {
-            $this->getEntityManager()->persist($bodega);
-            if ($flush) {
-                $this->getEntityManager()->flush();
-            }
-        } catch (\Exception $e) {
-            throw $e;
+        $this->getEntityManager()->persist($bodega);
+        if ($flush) {
+            $this->getEntityManager()->flush();
         }
-    } 
+    }
 
     public function remove(Bodega $bodega, bool $flush = false): void
     {
-        try {
-            $this->getEntityManager()->remove($bodega);
-            if ($flush) {
-                $this->getEntityManager()->flush();
-            }
-        } catch (\Exception $e) {
-            throw $e;
+        $this->getEntityManager()->remove($bodega);
+        if ($flush) {
+            $this->getEntityManager()->flush();
         }
     }
 
