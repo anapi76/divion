@@ -12,6 +12,7 @@ Divino is a wine management system that allows users to manage wineries, wines, 
 - API Documentation with Swagger (OpenAPI): http://localhost:8000/api/doc
 - Postman for testing
 - The application backend and database run in Docker containers
+- Visual Studio Code
 - GitHub repository
   https://github.com/anapi76/divinoBack.git
 
