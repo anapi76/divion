@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use RuntimeException;
 
-class DenominationNotFoundException extends RuntimeException
+class EspumosoNotFoundException extends RuntimeException
 {
     public function __construct(string $message)
     {

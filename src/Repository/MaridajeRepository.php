@@ -4,7 +4,6 @@ namespace App\Repository;
 
 use App\Entity\Maridaje;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -22,9 +21,9 @@ class MaridajeRepository extends ServiceEntityRepository
         parent::__construct($registry, Maridaje::class);
     }
 
-    public function findAllMaridajesByColor(int $idColor): mixed
+    public function findAllMaridajesByColor(int $idColor): array
     {
-        $maridajes= $this->createQueryBuilder('m')
+        $maridajes = $this->createQueryBuilder('m')
             ->distinct()
             ->innerJoin('App\Entity\VinoMaridaje', 'vm', 'WITH', 'm.id = vm.maridaje')
             ->innerJoin('App\Entity\Vino', 'v', 'WITH', 'vm.vino = v.id')
@@ -32,22 +31,13 @@ class MaridajeRepository extends ServiceEntityRepository
             ->setParameter('idColor', $idColor)
             ->getQuery()
             ->getResult();
-            if(empty($maridajes)){
-                return null;
-            }
-            $json = array(
-                'info' => array('count' => count($maridajes)),
-                'results' => array()
-            );
-            foreach ($maridajes as $maridaje) {
-                $json['results'][] = $this->maridajesJSON($maridaje);
-            }
-            return $json;
+
+        return $maridajes;
     }
 
-    public function findAllMaridajesByEspumoso(int $idEspumoso): mixed
+    public function findAllMaridajesByEspumoso(int $idEspumoso): array
     {
-        $maridajes= $this->createQueryBuilder('m')
+        $maridajes = $this->createQueryBuilder('m')
             ->distinct()
             ->innerJoin('App\Entity\VinoMaridaje', 'vm', 'WITH', 'm.id = vm.maridaje')
             ->innerJoin('App\Entity\Vino', 'v', 'WITH', 'vm.vino = v.id')
@@ -55,37 +45,9 @@ class MaridajeRepository extends ServiceEntityRepository
             ->setParameter('idEspumoso', $idEspumoso)
             ->getQuery()
             ->getResult();
-            if(empty($maridajes)){
-                return null;
-            }
-            $json = array(
-                'info' => array('count' => count($maridajes)),
-                'results' => array()
-            );
-            foreach ($maridajes as $maridaje) {
-                $json['results'][] = $this->maridajesJSON($maridaje);
-            }
-            return $json;
-    }
 
-    public function findMaridaje(Maridaje $maridaje): mixed
-    {
-        if (is_null($maridaje)) {
-            return null;
-        }
-        $json['results'][] = $this->maridajesJSON($maridaje);
-        return $json;
+        return $maridajes;
     }
-
-    public function maridajesJSON(Maridaje $maridaje): mixed
-    {
-        $json= array(
-            'id' => $maridaje->getId(),
-            'nombre' => $maridaje->getNombre()
-        );
-        return $json;
-    }
-
 
     //    /**
     //     * @return Maridaje[] Returns an array of Maridaje objects

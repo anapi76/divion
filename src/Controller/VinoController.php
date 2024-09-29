@@ -3,188 +3,190 @@
 namespace App\Controller;
 
 use App\Entity\Vino;
-use App\Repository\BodegaRepository;
-use App\Repository\ColorRepository;
-use App\Repository\EspumosoRepository;
-use App\Repository\VinoMaridajeRepository;
-use App\Repository\VinoRepository;
-use App\Repository\VinoUvaRepository;
+use App\Service\VinoService;
 use Exception;
+use App\Exception\ColorNotFoundException;
+use App\Exception\EspumosoNotFoundException;
+use App\Exception\InvalidFieldException;
+use App\Exception\BodegaNotFoundException;
+use App\Exception\NameAlreadyExistException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use OpenApi\Attributes as OA;
 
+#[Route('/api/vino')]
+#[OA\Tag(name: 'Wine')]
 class VinoController extends AbstractController
 {
-    private VinoRepository $vinoRepository;
-    private BodegaRepository $bodegaRepository;
-    private ColorRepository $colorRepository;
-    private EspumosoRepository $espumosoRepository;
-    private VinoUvaRepository $vinoUvaRepository;
-    private VinoMaridajeRepository $vinoMaridajeRepository;
+    private VinoService $vinoService;
 
-    public function __construct(
-        VinoRepository $vinoRepository,
-        BodegaRepository $bodegaRepository,
-        ColorRepository $colorRepository,
-        EspumosoRepository $espumosoRepository,
-        VinoUvaRepository $vinoUvaRepository,
-        VinoMaridajeRepository $vinoMaridajeRepository
-    ) {
-        $this->vinoRepository = $vinoRepository;
-        $this->bodegaRepository = $bodegaRepository;
-        $this->colorRepository = $colorRepository;
-        $this->espumosoRepository = $espumosoRepository;
-        $this->vinoUvaRepository = $vinoUvaRepository;
-        $this->vinoMaridajeRepository = $vinoMaridajeRepository;
+    public function __construct(VinoService $vinoService)
+    {
+        $this->vinoService = $vinoService;
     }
 
-    #[Route('/vino', name: 'app_vino_all', methods: ['GET'])]
+    #[Route('', name: 'app_vino_all', methods: ['GET'])]
+    #[OA\Get(
+        summary: 'Get all wines',
+        responses: [
+            new OA\Response(response: 200, description: 'Successful response')
+        ]
+    )]
     public function showAll(): JsonResponse
     {
-        $vinos = $this->vinoRepository->findAllVinos();
-        if (is_null($vinos)) {
-            return new JsonResponse(['status' => 'No existen vinos en la bd'], Response::HTTP_NOT_FOUND);
-        }
+        $vinos = $this->vinoService->findAllVinos();
         return new JsonResponse($vinos, Response::HTTP_OK);
     }
 
     #[Route('/ranking', name: 'app_vino_ranking', methods: ['GET'])]
+    #[OA\Get(
+        summary: 'Get all wines ranked by score',
+        responses: [
+            new OA\Response(response: 200, description: 'Successful response')
+        ]
+    )]
     public function showRanking(): JsonResponse
     {
-        $vinos = $this->vinoRepository->findRanking();
-        if (is_null($vinos)) {
-            return new JsonResponse(['status' => 'No existen vinos en la bd'], Response::HTTP_NOT_FOUND);
-        }
+        $vinos = $this->vinoService->findRanking();
         return new JsonResponse($vinos, Response::HTTP_OK);
     }
 
-    #[Route('/vino/color/{colorId}', name: 'app_vino_all_by_color', methods: ['GET'])]
+    #[Route('/color/{colorId}', name: 'app_vino_all_by_color', methods: ['GET'])]
+    #[OA\Get(
+        summary: 'Get all wines by color',
+        responses: [
+            new OA\Response(response: 200, description: 'Successful response'),
+            new OA\Response(response: 404, description: 'Not found')
+        ]
+    )]
     public function showAllByColor(int $colorId): JsonResponse
     {
-        $color = $this->colorRepository->find($colorId);
-        $vinos = $this->vinoRepository->findAllVinosByColor($color);
-        if (is_null($vinos)) {
-            return new JsonResponse(['status' => 'No existen vinos en la bd'], Response::HTTP_NOT_FOUND);
+        try {
+            $vinos = $this->vinoService->findAllVinosByColor($colorId);
+            return new JsonResponse($vinos, Response::HTTP_OK);
+        } catch (ColorNotFoundException $e) {
+            return new JsonResponse(['status' => $e->getMessage()], Response::HTTP_NOT_FOUND);
         }
-        return new JsonResponse($vinos, Response::HTTP_OK);
     }
 
-    #[Route('/vino/espumoso/{espumosoId}', name: 'app_vino_all_by_espumoso', methods: ['GET'])]
+    #[Route('/espumoso/{espumosoId}', name: 'app_vino_all_by_espumoso', methods: ['GET'])]
+    #[OA\Get(
+        summary: 'Get all wines by sparkling',
+        responses: [
+            new OA\Response(response: 200, description: 'Successful response'),
+            new OA\Response(response: 404, description: 'Not found')
+        ]
+    )]
     public function showAllByEspumoso(int $espumosoId): JsonResponse
     {
-        $espumoso = $this->espumosoRepository->find($espumosoId);
-        $vinos = $this->vinoRepository->findAllVinosByEspumoso($espumoso);
-        if (is_null($vinos)) {
-            return new JsonResponse(['status' => 'No existen vinos en la bd'], Response::HTTP_NOT_FOUND);
+        try {
+            $vinos = $this->vinoService->findAllVinosByEspumoso($espumosoId);
+            return new JsonResponse($vinos, Response::HTTP_OK);
+        } catch (EspumosoNotFoundException $e) {
+            return new JsonResponse(['status' => $e->getMessage()], Response::HTTP_NOT_FOUND);
         }
-        return new JsonResponse($vinos, Response::HTTP_OK);
     }
 
-    #[Route('/vino/{id}', name: 'app_vino', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_vino', methods: ['GET'])]
+    #[OA\Get(
+        summary: 'Get a wine',
+        responses: [
+            new OA\Response(response: 200, description: 'Successful response'),
+            new OA\Response(response: 404, description: 'Not found')
+        ]
+    )]
     public function show(?Vino $vino = null): JsonResponse
     {
         if (is_null($vino)) {
             return new JsonResponse(['status' => 'El vino no existe en la bd'], Response::HTTP_NOT_FOUND);
         }
-        $vinoJson = $this->vinoRepository->findvino($vino);
+        $vinoJson = $this->vinoService->findvino($vino);
         return new JsonResponse($vinoJson, Response::HTTP_OK);
     }
 
-
-    #[Route('/vino', name: 'app_vino_new', methods: ['POST'])]
+    #[Route('', name: 'app_vino_new', methods: ['POST'])]
+    #[OA\Post(
+        summary: 'Create a wine',
+        responses: [
+            new OA\Response(response: 201, description: 'Resource created successfully'),
+            new OA\Response(response: 400, description: 'Bad request'),
+            new OA\Response(response: 404, description: 'Not found'),
+            new OA\Response(response: 500, description: 'Internal server error')
+            ]
+    )]
     public function add(Request $request): JsonResponse
     {
         try {
-            $data = json_decode($request->getContent());
+            $data = json_decode($request->getContent(), true);
             if (is_null($data)) {
                 return new JsonResponse(['status' => 'Error al decodificar el archivo json'], Response::HTTP_BAD_REQUEST);
             }
-            if (!$this->vinoRepository->requiredFields($data)) {
-                return new JsonResponse(['status' => 'Faltan parámetros'], Response::HTTP_BAD_REQUEST);
-            }
-            $color = $this->colorRepository->find($data->color);
-            if (is_null($color)) {
-                return new JsonResponse(['status' => 'El color del vino no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
-            }
-            $bodega = $this->bodegaRepository->find($data->bodega);
-            if (is_null($bodega)) {
-                return new JsonResponse(['status' => 'La bodega no existe existe en la bd'], Response::HTTP_BAD_REQUEST);
-            }
-            $maduracion = (isset($data->maduracion) && !empty($data->maduracion)) ? $this->vinoRepository->isValidMaduracion($data->maduracion) : null;
-            $azucar = (isset($data->azucar) && !empty($data->azucar)) ? $this->vinoRepository->isValidAzucar($data->azucar) : null;
-            $sabor = (isset($data->sabor) && !empty($data->sabor)) ? $this->vinoRepository->isValidSabor($data->sabor) : null;
-            $cuerpo = (isset($data->cuerpo) && !empty($data->cuerpo)) ? $this->vinoRepository->isValidCuerpo($data->cuerpo) : null;
-            $boca = (isset($data->boca) && !empty($data->boca)) ? $this->vinoRepository->isValidBoca($data->boca) : null;
-            $espumoso = (isset($data->espumoso) && !empty($data->espumoso)) ? $this->espumosoRepository->isValidEspumoso($data->espumoso) : null;
-
-            $uvas = (isset($data->uvas) && !empty($data->uvas)) ? $data->uvas : null;
-            $maridajes = (isset($data->maridajes) && !empty($data->maridajes)) ? $data->maridajes : null;
-            $this->vinoRepository->new($data->nombre, $data->descripcion, $data->notaCata, $data->imagen, $data->url, $color, $azucar, $espumoso, $maduracion, $bodega, $sabor, $cuerpo, $boca, $uvas, $maridajes, true);
-            if (!$this->vinoRepository->testInsert($data->nombre)) {
-                return new JsonResponse(['status' => 'La inserción del vino falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
+            $this->vinoService->new($data);
             return new JsonResponse(['status' => 'Vino insertado correctamente'], Response::HTTP_CREATED);
+        } catch (NameAlreadyExistException $e) {
+            return new JsonResponse(['status' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (InvalidFieldException $e) {
+            return new JsonResponse(['status' => $e->getMessage(), 'errors' => $e->getErrors()], Response::HTTP_BAD_REQUEST);
+        } catch (ColorNotFoundException $e) {
+            return new JsonResponse(['status' => $e->getMessage()], Response::HTTP_NOT_FOUND);
+        } catch (BodegaNotFoundException $e) {
+            return new JsonResponse(['status' => $e->getMessage()], Response::HTTP_NOT_FOUND);
         } catch (Exception $e) {
             $msg = 'Error del servidor: ' . $e->getMessage();
             return new JsonResponse(['status' => $msg], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    #[Route('/vino/{id}', name: 'app_vino_update', methods: ['PUT'])]
+    #[Route('/{id}', name: 'app_vino_update', methods: ['PUT'])]
+    #[OA\Put(
+        summary: 'Update a wine',
+        responses: [
+            new OA\Response(response: 200, description: 'Successful response'),
+            new OA\Response(response: 404, description: 'Not found'),
+            new OA\Response(response: 400, description: 'Bad request'),
+            new OA\Response(response: 500, description: 'Internal server error')
+        ]
+    )]
     public function update(Request $request, ?Vino $vino = null): JsonResponse
     {
         try {
-            $data = json_decode($request->getContent());
+            $data = json_decode($request->getContent(), true);
             if (is_null($data)) {
                 return new JsonResponse(['status' => 'Error al decodificar el archivo json'], Response::HTTP_BAD_REQUEST);
             }
             if (is_null($vino)) {
                 return new JsonResponse(['status' => "El vino no existe en la bd"], Response::HTTP_NOT_FOUND);
             }
-            $descripcion = (isset($data->descripcion) && !empty($data->descripcion)) ? $data->descripcion : null;
-            $notaCata = (isset($data->notaCata) && !empty($data->notaCata)) ? $data->notaCata : null;
-            $imagen = (isset($data->imagen) && !empty($data->imagen)) ? $data->imagen : null;
-            $url = (isset($data->url) && !empty($data->url)) ? $data->url : null;
-            $uvas = (isset($data->uvas) && !empty($data->uvas)) ? $data->uvas : null;
-            $maridajes = (isset($data->maridajes) && !empty($data->maridajes)) ? $data->maridajes : null;
-            if (!$this->vinoRepository->update($vino, $descripcion, $notaCata, $imagen, $url, $uvas, $maridajes, true)) {
-                return new JsonResponse(['status' => 'El vino no se ha actualizado'], Response::HTTP_BAD_REQUEST);
-            }
+            $this->vinoService->update($data, $vino);
             return new JsonResponse(['status' => 'Vino actualizado correctamente'], Response::HTTP_OK);
+        } catch (InvalidFieldException $e) {
+            return new JsonResponse(['status' => $e->getMessage(), 'errors' => $e->getErrors()], Response::HTTP_BAD_REQUEST);
         } catch (Exception $e) {
             $msg = 'Error del servidor: ' . $e->getMessage();
             return new JsonResponse(['status' => $msg], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    #[Route('/vino/{id}', name: 'app_vino_delete', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'app_vino_delete', methods: ['DELETE'])]
+    #[OA\Delete(
+        summary: 'Delete a wine',
+        responses: [
+            new OA\Response(response: 200, description: 'Successful response'),
+            new OA\Response(response: 404, description: 'Not found'),
+            new OA\Response(response: 500, description: 'Internal server error')
+        ]
+    )]
     public function delete(?Vino $vino = null): JsonResponse
     {
         try {
             if (is_null($vino)) {
                 return new JsonResponse(['status' => 'El vino no existe en la bd'], Response::HTTP_NOT_FOUND);
             }
-            if (count($vino->getUvas()) > 0) {
-                foreach ($vino->getUvas() as $vinoUva) {
-                    $vino->removeUva($vinoUva);
-                    $this->vinoUvaRepository->remove($vinoUva);
-                }
-            }
-            if (count($vino->getMaridajes()) > 0) {
-                foreach ($vino->getMaridajes() as $vinoMaridaje) {
-                    $vino->removeMaridaje($vinoMaridaje);
-                    $this->vinoMaridajeRepository->remove($vinoMaridaje);
-                }
-            }
-            $this->vinoRepository->remove($vino, true);
-            if ($this->vinoRepository->testDelete($vino->getNombre())) {
-                return new JsonResponse('El vino ha sido borrado', Response::HTTP_OK);
-            } else {
-                return new JsonResponse(['status' => 'La eliminación del vino falló'], Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
+            $this->vinoService->delete($vino);
+            return new JsonResponse('El vino ha sido borrado', Response::HTTP_OK);
         } catch (Exception $e) {
             $msg = 'Error del servidor: ' . $e->getMessage();
             return new JsonResponse(['status' => $msg], Response::HTTP_INTERNAL_SERVER_ERROR);

@@ -2,29 +2,34 @@
 
 namespace App\Controller;
 
-use App\Repository\EspumosoRepository;
+use App\Service\EspumosoService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use OpenApi\Attributes as OA;
 
+#[Route('/api/espumoso')]
+#[OA\Tag(name: 'Sparkling Wine')]
 class EspumosoController extends AbstractController
 {
-    private EspumosoRepository $espumosoRepository;
+    private EspumosoService $espumosoService;
 
-    public function __construct(EspumosoRepository $espumosoRepository)
+    public function __construct(EspumosoService $espumosoService)
     {
-        $this->espumosoRepository = $espumosoRepository;
+        $this->espumosoService = $espumosoService;
     }
 
-
-    #[Route('/espumoso', name: 'app_espumoso', methods: ['GET'])]
+    #[Route('', name: 'app_espumoso', methods: ['GET'])]
+    #[OA\Get(
+        summary: 'Get all sparkling wines',
+        responses: [
+            new OA\Response(response: 200, description: 'Successful response')
+        ]
+    )]
     public function showAll(): JsonResponse
     {
-        $espumosos = $this->espumosoRepository->findAllEspumosos();
-        if (is_null($espumosos)) {
-            return new JsonResponse(['status' => 'No existen espumososos en la bd'], Response::HTTP_NOT_FOUND);
-        }
+        $espumosos = $this->espumosoService->findAllEspumosos();
         return new JsonResponse($espumosos, Response::HTTP_OK);
     }
 }

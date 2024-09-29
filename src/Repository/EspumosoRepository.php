@@ -21,32 +21,6 @@ class EspumosoRepository extends ServiceEntityRepository
         parent::__construct($registry, Espumoso::class);
     }
 
-    public function findAllEspumosos(): mixed
-    {
-        $espumosos = $this->findAll();
-        if (empty($espumosos)) {
-            return null;
-        }
-        $json = array(
-            'info' => array('count' => count($espumosos)),
-            'results' => array()
-        );
-        foreach ($espumosos as $espumoso) {
-            $json['results'][] = $this->espumososJSON($espumoso);
-        }
-        return $json;
-    }
-
-    public function espumososJSON(Espumoso $espumoso): mixed
-    {
-        $json= array(
-            'id' => $espumoso->getId(),
-            'nombre' => $espumoso->getNombre()
-        );
-
-        return $json;
-    }
-
 //    /**
 //     * @return Espumoso[] Returns an array of Espumoso objects
 //     */

@@ -21,36 +21,15 @@ class SaborRepository extends ServiceEntityRepository
         parent::__construct($registry, Sabor::class);
     }
 
-    public function findAllSaboresByColor(int $idColor): mixed
+    public function findAllSaboresByColor(int $idColor): array
     {
-        $sabores= $this->createQueryBuilder('s')
+       return $this->createQueryBuilder('s')
             ->distinct()
             ->innerJoin('App\Entity\Vino', 'v', 'WITH', 's.id = v.sabor')
             ->where('v.color = :idColor')
             ->setParameter('idColor', $idColor)
             ->getQuery()
             ->getResult();
-            if(empty($sabores)){
-                return null;
-            }
-            $json = array(
-                'info' => array('count' => count($sabores)),
-                'results' => array()
-            );
-            foreach ($sabores as $sabor) {
-                $json['results'][] = $this->saboresJSON($sabor);
-            }
-            return $json;
-    }
-
-    public function saboresJSON(Sabor $sabor): mixed
-    {
-        $json= array(
-            'id' => $sabor->getId(),
-            'nombre' => $sabor->getNombre()
-        );
-
-        return $json;
     }
 
     //    /**

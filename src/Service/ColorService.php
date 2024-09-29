@@ -5,7 +5,8 @@ namespace App\Service;
 use App\Entity\Color;
 use App\Repository\ColorRepository;
 
-class ColorService {
+class ColorService
+{
 
     private ColorRepository $colorRepository;
 
@@ -13,7 +14,6 @@ class ColorService {
     {
         $this->colorRepository = $colorRepository;
     }
-
 
     public function findAllColores(): array
     {
@@ -33,5 +33,4 @@ class ColorService {
             'nombre' => $color->getNombre()
         ];
     }
-
 }

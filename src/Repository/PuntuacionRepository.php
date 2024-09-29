@@ -21,33 +21,6 @@ class PuntuacionRepository extends ServiceEntityRepository
         parent::__construct($registry, Puntuacion::class);
     }
 
-    public function findAllPuntuaciones(): mixed
-    {
-        $puntuaciones = $this->findAll();
-        if (empty($puntuaciones)) {
-            return null;
-        }
-        $json = array(
-            'info' => array('count' => count($puntuaciones)),
-            'results' => array()
-        );
-        foreach ($puntuaciones as $puntuacion) {
-            $json['results'][] = $this->puntuacionesJSON($puntuacion);
-        }
-        return $json;
-    }
-
-    public function puntuacionesJSON(Puntuacion $puntuacion): mixed
-    {
-        $json= array(
-            'id' => $puntuacion->getId(),
-            'puntos' => $puntuacion->getPuntos(),
-            'descripcion' => $puntuacion->getDescripcion()
-        );
-
-        return $json;
-    }
-
     //    /**
     //     * @return Puntuacion[] Returns an array of Puntuacion objects
     //     */

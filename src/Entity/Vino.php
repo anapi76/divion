@@ -33,7 +33,7 @@ class Vino
     private ?string $url = null;
 
     #[ORM\Column(options:["default"=>0])]
-    private ?int $puntos = null;
+    private int $puntos=0;
 
     #[ORM\ManyToOne(inversedBy: 'vinos')]
     #[ORM\JoinColumn(name: 'idColor', referencedColumnName: 'idColor',nullable: false)]
@@ -148,12 +148,12 @@ class Vino
         return $this;
     }
 
-    public function getPuntos(): ?int
+    public function getPuntos(): int
     {
         return $this->puntos;
     }
 
-    public function setPuntos(?int $puntos): self
+    public function setPuntos(int $puntos): self
     {
         $this->puntos = $puntos;
 

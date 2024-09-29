@@ -17,47 +17,24 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class VinoUvaRepository extends ServiceEntityRepository
 {
-    private UvaRepository $uvaRepository;
-    
-    public function __construct(ManagerRegistry $registry, UvaRepository $uvaRepository)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, VinoUva::class);
-        $this->uvaRepository = $uvaRepository;
-    }
-
-    public function new(array $uvas, Vino $vino): void
-    {
-        foreach ($uvas as $uvaId) {
-            $uva = $this->uvaRepository->find($uvaId);
-            $vinoUva = new VinoUva();
-            $vinoUva->setVino($vino);
-            $vinoUva->setUva($uva);
-            $this->getEntityManager()->persist($vinoUva);
-            $vino->addUva($vinoUva);
-        }
     }
 
     public function save(VinoUva $vinoUva, bool $flush = false): void
     {
-        try {
-            $this->getEntityManager()->persist($vinoUva);
-            if ($flush) {
-                $this->getEntityManager()->flush();
-            }
-        } catch (\Exception $e) {
-            throw $e;
+        $this->getEntityManager()->persist($vinoUva);
+        if ($flush) {
+            $this->getEntityManager()->flush();
         }
     }
 
     public function remove(VinoUva $vinoUva, bool $flush = false): void
     {
-        try {
-            $this->getEntityManager()->remove($vinoUva);
-            if ($flush) {
-                $this->getEntityManager()->flush();
-            }
-        } catch (\Exception $e) {
-            throw $e;
+        $this->getEntityManager()->remove($vinoUva);
+        if ($flush) {
+            $this->getEntityManager()->flush();
         }
     }
 

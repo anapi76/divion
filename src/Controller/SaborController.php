@@ -2,28 +2,34 @@
 
 namespace App\Controller;
 
-use App\Repository\SaborRepository;
+use App\Service\SaborService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use OpenApi\Attributes as OA;
 
+#[Route('/api/sabor')]
+#[OA\Tag(name: 'Flavor')]
 class SaborController extends AbstractController
 {
-    private SaborRepository $saborRepository;
+    private SaborService $saborService;
 
-    public function __construct(SaborRepository $saborRepository)
+    public function __construct(SaborService $saborService)
     {
-        $this->saborRepository = $saborRepository;
+        $this->saborService = $saborService;
     }
 
-    #[Route('/sabor/{idColor}', name: 'app_sabor_color', methods: ['GET'])]
-    public function showAllByColor(int $idColor): JsonResponse
+    #[OA\Get(
+        summary: 'Get all flavors by wine color',
+        responses: [
+            new OA\Response(response: 200, description: 'Successful response')
+        ]
+    )]
+    #[Route('/{idColor}', name: 'app_sabor_color', methods: ['GET'])]
+    public function showAllByColor(?int $idColor): JsonResponse
     {
-        $sabores = $this->saborRepository->findAllSaboresByColor($idColor);
-        if (is_null($sabores)) {
-            return new JsonResponse(['status' => 'No existen sabores en la bd'], Response::HTTP_NOT_FOUND);
-        }
+        $sabores = $this->saborService->findAllSaboresByColor($idColor);
         return new JsonResponse($sabores, Response::HTTP_OK);
     }
 }

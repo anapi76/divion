@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use RuntimeException;
 
-class WineryDeletionException extends RuntimeException
+class BodegaNotFoundException extends RuntimeException
 {
     public function __construct(string $message)
     {

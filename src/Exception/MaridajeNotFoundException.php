@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use RuntimeException;
 
-class InvalidParamsException extends RuntimeException
+class MaridajeNotFoundException extends RuntimeException
 {
     public function __construct(string $message)
     {

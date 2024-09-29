@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use RuntimeException;
 
-class DenominationDeletionException extends RuntimeException
+class DenominacionDeletionException extends RuntimeException
 {
     public function __construct(string $message)
     {

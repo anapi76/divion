@@ -3,27 +3,31 @@
 namespace App\Service;
 
 use App\Entity\Denominacion;
+use App\Entity\Region;
 use App\Repository\DenominacionRepository;
 use App\Repository\RegionRepository;
 use App\Repository\UvaDoRepository;
+use App\Service\UvaDoService;
 use Doctrine\Common\Collections\Collection;
 use DateTime;
-use App\Exception\InvalidParamsException;
 use App\Exception\InvalidYearException;
+use App\Exception\InvalidFieldException;
 use App\Exception\NameAlreadyExistException;
 use App\Exception\RegionNotFoundException;
-use App\Exception\DenominationDeletionException;
+use App\Exception\DenominacionDeletionException;
 
 class DenominacionService
 {
     private DenominacionRepository $denominacionRepository;
     private RegionRepository $regionRepository;
+    private UvaDoService $uvaDoService;
     private UvaDoRepository $uvaDoRepository;
 
-    public function __construct(DenominacionRepository $denominacionRepository, RegionRepository $regionRepository, UvaDoRepository $uvaDoRepository)
+    public function __construct(DenominacionRepository $denominacionRepository, RegionRepository $regionRepository, UvaDoService $uvaDoService, UvaDoRepository $uvaDoRepository)
     {
         $this->denominacionRepository = $denominacionRepository;
         $this->regionRepository = $regionRepository;
+        $this->uvaDoService = $uvaDoService;
         $this->uvaDoRepository = $uvaDoRepository;
     }
 
@@ -46,17 +50,15 @@ class DenominacionService
 
     public function new(array $data): void
     {
-        if (!$this->requiredFieldsCreate($data)) {
-            throw new InvalidParamsException('Faltan parámetros');
+        $errors = $this->requiredFieldsCreate($data);
+        if (!empty($errors)) {
+            throw new InvalidFieldException($errors);
         }
         $denominacion = $this->denominacionRepository->findOneBy(['nombre' => $data['nombre']]);
         if (!is_null($denominacion)) {
             throw new NameAlreadyExistException('El nombre ya existe en la bd');
         }
-        $region = $this->regionRepository->find($data['region']);
-        if (is_null($region)) {
-            throw new RegionNotFoundException('La región no existe existe en la bd');
-        }
+        $region = $this->findRegion($data['region']);
         $calificada = (isset($data['calificada']) && !empty($data['calificada'])) ? $data['calificada'] : false;
         $creacion = (!isset($data['creacion']) || empty($data['creacion'])) ? null : $data['creacion'];
         if (!is_null($creacion) && !$this->isValidCreacion($creacion)) {
@@ -79,17 +81,19 @@ class DenominacionService
         $denominacion->setDescripcionVinos($data['descripcionVinos']);
         $denominacion->setUrl($data['url']);
         $denominacion->setRegion($region);
-        $this->uvaDoRepository->new($uvas, $denominacion);
-
+        if (!is_null($uvas)) {
+            $this->uvaDoService->new($uvas, $denominacion);
+        }
         $this->denominacionRepository->save($denominacion, true);
     }
 
     public function update(array $data, Denominacion $denominacion): void
     {
-        if (!$this->requiredFieldsUpdate($data)) {
-            throw new InvalidParamsException('Faltan parámetros');
+        $errors = $this->requiredFieldsUpdate($data);
+        if (!empty($errors)) {
+            throw new InvalidFieldException($errors);
         }
-        /*         $calificada = (isset($data['calificada']) && !empty($data['calificada'])) ? $data['calificada'] : false;
+        /*$calificada = (isset($data['calificada']) && !empty($data['calificada'])) ? $data['calificada'] : false;
         $denominacion->setCalificada($calificada); */
         $denominacion->setImagen($data['imagen']);
         $denominacion->setImagenHistoria($data['imagenHistoria']);
@@ -107,7 +111,7 @@ class DenominacionService
     public function delete(Denominacion $denominacion): void
     {
         if (count($denominacion->getBodegas()) > 0) {
-            throw new DenominationDeletionException('La denominación de origen no puede ser borrada, tiene bodegas asociadas');
+            throw new DenominacionDeletionException('La denominación de origen no puede ser borrada, tiene bodegas asociadas');
         }
         if (count($denominacion->getUvas()) > 0) {
             foreach ($denominacion->getUvas() as $uvaDo) {
@@ -118,24 +122,13 @@ class DenominacionService
         $this->denominacionRepository->remove($denominacion, true);
     }
 
-    public function testInsert(string $nombre): bool
+    private function findRegion(int $idRegion): Region
     {
-        $entidad = $this->denominacionRepository->findOneBy(['nombre' => $nombre]);
-        if (empty($entidad))
-            return false;
-        else {
-            return true;
+        $region = $this->regionRepository->find($idRegion);
+        if (is_null($region)) {
+            throw new RegionNotFoundException('La región no existe existe en la bd');
         }
-    }
-
-    public function testDelete(string $nombre): bool
-    {
-        $entidad = $this->denominacionRepository->findOneBy(['nombre' => $nombre]);
-        if (empty($entidad))
-            return true;
-        else {
-            return false;
-        }
+        return $region;
     }
 
     private function denominacionesJSON(Denominacion $denominacion): array
@@ -179,32 +172,75 @@ class DenominacionService
         return $json;
     }
 
-    private function requiredFieldsCreate(array $data): bool
+    private function requiredFieldsCreate(array $data): array
     {
-        return (isset($data['nombre']) && !empty($data['nombre'])
-            && isset($data['imagen']) && !empty($data['imagen'])
-            && isset($data['imagenHistoria']) && !empty($data['imagenHistoria'])
-            && isset($data['imagenUva']) && !empty($data['imagenUva'])
-            && isset($data['logo']) && !empty($data['logo'])
-            && isset($data['historia']) && !empty($data['historia'])
-            && isset($data['descripcion']) && !empty($data['descripcion'])
-            && isset($data['descripcionVinos']) && !empty($data['descripcionVinos'])
-            && isset($data['url']) && !empty($data['url'])
-            && isset($data['region']) && !empty($data['region']));
+        $errors = [];
+
+        if (!isset($data['nombre']) || empty($data['nombre'])) {
+            $errors[] = "El campo 'nombre' es obligatorio.";
+        }
+        if (!isset($data['imagen']) || empty($data['imagen'])) {
+            $errors[] = "El campo 'imagen' es obligatorio.";
+        }
+        if (!isset($data['imagenHistoria']) || empty($data['imagenHistoria'])) {
+            $errors[] = "El campo 'imagenHistoria' es obligatorio.";
+        }
+        if (!isset($data['imagenUva']) || empty($data['imagenUva'])) {
+            $errors[] = "El campo 'imagenUva' es obligatorio.";
+        }
+        if (!isset($data['logo']) || empty($data['logo'])) {
+            $errors[] = "El campo 'logo' es obligatorio.";
+        }
+        if (!isset($data['historia']) || empty($data['historia'])) {
+            $errors[] = "El campo 'historia' es obligatorio.";
+        }
+        if (!isset($data['descripcion']) || empty($data['descripcion'])) {
+            $errors[] = "El campo 'descripcion' es obligatorio.";
+        }
+        if (!isset($data['descripcionVinos']) || empty($data['descripcionVinos'])) {
+            $errors[] = "El campo 'descripcionVinos' es obligatorio.";
+        }
+        if (!isset($data['url']) || empty($data['url'])) {
+            $errors[] = "El campo 'url' es obligatorio.";
+        }
+        if (!isset($data['region']) || empty($data['region'])) {
+            $errors[] = "El campo 'region' es obligatorio.";
+        }
+        return $errors;
     }
 
-    private function requiredFieldsUpdate(array $data): bool
+    private function requiredFieldsUpdate(array $data): array
     {
-        return (
-            isset($data['imagen']) && !empty($data['imagen'])
-            && isset($data['imagenHistoria']) && !empty($data['imagenHistoria'])
-            && isset($data['imagenUva']) && !empty($data['imagenUva'])
-            && isset($data['logo']) && !empty($data['logo'])
-            && isset($data['historia']) && !empty($data['historia'])
-            && isset($data['descripcion']) && !empty($data['descripcion'])
-            && isset($data['descripcionVinos']) && !empty($data['descripcionVinos'])
-            && isset($data['web']) && !empty($data['web'])
-            && isset($data['url']) && !empty($data['url']));
+        $errors = [];
+
+        if (!isset($data['imagen']) || empty($data['imagen'])) {
+            $errors[] = "El campo 'imagen' es obligatorio.";
+        }
+        if (!isset($data['imagenHistoria']) || empty($data['imagenHistoria'])) {
+            $errors[] = "El campo 'imagenHistoria' es obligatorio.";
+        }
+        if (!isset($data['imagenUva']) || empty($data['imagenUva'])) {
+            $errors[] = "El campo 'imagenUva' es obligatorio.";
+        }
+        if (!isset($data['logo']) || empty($data['logo'])) {
+            $errors[] = "El campo 'logo' es obligatorio.";
+        }
+        if (!isset($data['historia']) || empty($data['historia'])) {
+            $errors[] = "El campo 'historia' es obligatorio.";
+        }
+        if (!isset($data['descripcion']) || empty($data['descripcion'])) {
+            $errors[] = "El campo 'descripcion' es obligatorio.";
+        }
+        if (!isset($data['descripcionVinos']) || empty($data['descripcionVinos'])) {
+            $errors[] = "El campo 'descripcionVinos' es obligatorio.";
+        }
+        if (!isset($data['web']) || empty($data['web'])) {
+            $errors[] = "El campo 'web' es obligatorio.";
+        }
+        if (!isset($data['url']) || empty($data['url'])) {
+            $errors[] = "El campo 'url' es obligatorio.";
+        }
+        return $errors;
     }
 
     private function isValidCreacion(int $creacion): bool

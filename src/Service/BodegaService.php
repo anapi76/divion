@@ -3,18 +3,18 @@
 namespace App\Service;
 
 use App\Entity\Bodega;
+use App\Entity\Denominacion;
 use App\Repository\BodegaRepository;
 use App\Repository\DenominacionRepository;
-use App\Exception\InvalidParamsException;
+use App\Exception\InvalidFieldException;
 use App\Exception\NameAlreadyExistException;
-use App\Exception\DenominationNotFoundException;
-use App\Exception\WineryDeletionException;
+use App\Exception\DenominacionNotFoundException;
+use App\Exception\BodegaDeletionException;
 use Doctrine\Common\Collections\Collection;
 
 
 class BodegaService
 {
-
     private BodegaRepository $bodegaRepository;
     private DenominacionRepository $denominacionRepository;
 
@@ -43,17 +43,15 @@ class BodegaService
 
     public function new(array $data): void
     {
-        if (!$this->requiredFieldsCreate($data)) {
-            throw new InvalidParamsException('Faltan parámetros');
+        $errors = $this->requiredFieldsCreate($data);
+        if (!empty($errors)) {
+            throw new InvalidFieldException($errors);
         }
         $bodega = $this->bodegaRepository->findOneBy(['nombre' => $data['nombre']]);
         if (!is_null($bodega)) {
             throw new NameAlreadyExistException('El nombre ya existe en la bd');
         }
-        $denominacion = $this->denominacionRepository->find($data['denominacion']);
-        if (is_null($denominacion)) {
-            throw new DenominationNotFoundException('La denominación de origen no existe existe en la bd');
-        }
+        $denominacion = $this->findDenominacion($data['denominacion']);
         $poblacion = (!isset($data['poblacion']) || empty($data['poblacion'])) ? null : $data['poblacion'];
         $codPostal = (!isset($data['cod_postal']) || empty($data['cod_postal'])) ? null : $data['cod_postal'];
         $email = (!isset($data['email']) || empty($data['email'])) ? null : $data['email'];
@@ -64,8 +62,8 @@ class BodegaService
         $bodega = new Bodega();
         $bodega->setNombre($data['nombre']);
         $bodega->setDireccion($data['direccion']);
-        $bodega->setPoblacion($poblacion);
         $bodega->setProvincia($data['provincia']);
+        $bodega->setPoblacion($poblacion);
         $bodega->setCodPostal($codPostal);
         $bodega->setEmail($email);
         $bodega->setTelefono($telefono);
@@ -79,8 +77,9 @@ class BodegaService
 
     public function update(array $data, Bodega $bodega): void
     {
-        if (!$this->requiredFieldsUpdate($data)) {
-            throw new InvalidParamsException('Faltan parámetros');
+        $errors = $this->requiredFieldsUpdate($data);
+        if (!empty($errors)) {
+            throw new InvalidFieldException($errors);
         }
         $bodega->setDireccion($data['direccion']);
         $bodega->setPoblacion($data['poblacion']);
@@ -97,29 +96,18 @@ class BodegaService
     public function delete(Bodega $bodega): void
     {
         if (count($bodega->getVinos()) > 0) {
-            throw new WineryDeletionException('La bodega no puede ser borrada, tiene vinos asociados');
+            throw new BodegaDeletionException('La bodega no puede ser borrada, tiene vinos asociados');
         }
         $this->bodegaRepository->remove($bodega, true);
     }
 
-    public function testInsert(string $nombre): bool
+    private function findDenominacion(int $idDenominacion): Denominacion
     {
-        $entidad = $this->bodegaRepository->findOneBy(['nombre' => $nombre]);
-        if (empty($entidad))
-            return false;
-        else {
-            return true;
+        $denominacion = $this->denominacionRepository->find($idDenominacion);
+        if (is_null($denominacion)) {
+            throw new DenominacionNotFoundException('La denominación de origen no existe existe en la bd');
         }
-    }
-
-    public function testDelete(string $nombre): bool
-    {
-        $entidad = $this->bodegaRepository->findOneBy(['nombre' => $nombre]);
-        if (empty($entidad))
-            return true;
-        else {
-            return false;
-        }
+        return $denominacion;
     }
 
     private function bodegasJSON(Bodega $bodega): array
@@ -149,25 +137,54 @@ class BodegaService
         return $json;
     }
 
-    private function requiredFieldsCreate(array $data): bool
+    private function requiredFieldsCreate(array $data): array
     {
-        return (isset($data['nombre']) && !empty($data['nombre']) &&
-            isset($data['direccion']) && !empty($data['direccion']) &&
-            isset($data['provincia']) && !empty($data['provincia']) &&
-            isset($data['url']) && !empty($data['url']) &&
-            isset($data['denominacion']) && !empty($data['denominacion']));
+        $errors = [];
+        if (!isset($data['nombre']) || empty($data['nombre'])) {
+            $errors[] = "El campo 'nombre' es obligatorio.";
+        }
+        if (!isset($data['direccion']) || empty($data['direccion'])) {
+            $errors[] = "El campo 'direccion' es obligatorio.";
+        }
+        if (!isset($data['provincia']) || empty($data['provincia'])) {
+            $errors[] = "El campo 'provincia' es obligatorio.";
+        }
+        if (!isset($data['url']) || empty($data['url'])) {
+            $errors[] = "El campo 'url' es obligatorio.";
+        }
+        if (!isset($data['denominacion']) || empty($data['denominacion'])) {
+            $errors[] = "El campo 'denominacion' es obligatorio.";
+        }
+        return $errors;
     }
 
-    private function requiredFieldsUpdate(array $data): bool
+    private function requiredFieldsUpdate(array $data): array
     {
-        return (isset($data['direccion']) && !empty($data['direccion']) &&
-            isset($data['poblacion']) && !empty($data['poblacion']) &&
-            isset($data['provincia']) && !empty($data['provincia']) &&
-            isset($data['cod_postal']) && !empty($data['cod_postal']) &&
-            isset($data['email']) && !empty($data['email']) &&
-            isset($data['telefono']) && !empty($data['telefono']) &&
-            isset($data['web']) && !empty($data['web']) &&
-            isset($data['url']) && !empty($data['url'])
-        );
+        $errors = [];
+        if (!isset($data['direccion']) || empty($data['direccion'])) {
+            $errors[] = "El campo 'direccion' es obligatorio.";
+        }
+        if (!isset($data['poblacion']) || empty($data['poblacion'])) {
+            $errors[] = "El campo 'poblacion¡ es obligatorio.";
+        }
+        if (!isset($data['provincia']) || empty($data['provincia'])) {
+            $errors[] = "El campo 'provincia' es obligatorio.";
+        }
+        if (!isset($data['cod_postal']) || empty($data['cod_postal'])) {
+            $errors[] = "El campo 'cod_postal' es obligatorio.";
+        }
+        if (!isset($data['email']) || empty($data['email'])) {
+            $errors[] = "El campo 'email' es obligatorio.";
+        }
+        if (!isset($data['telefono']) || empty($data['telefono'])) {
+            $errors[] = "El campo 'telefono'es obligatorio.";
+        }
+        if (!isset($data['web']) || empty($data['web'])) {
+            $errors[] = "El campo 'web' es obligatorio.";
+        }
+        if (!isset($data['url']) || empty($data['url'])) {
+            $errors[] = "El campo 'url' es obligatorio.";
+        }
+        return $errors;
     }
 }

@@ -2,9 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\Puntuacion;
 use App\Entity\PuntuacionVino;
-use App\Entity\Vino;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -23,93 +21,22 @@ class PuntuacionVinoRepository extends ServiceEntityRepository
         parent::__construct($registry, PuntuacionVino::class);
     }
 
-    public function findAllOrderedByPuntuaciones($campo): mixed
+    public function save(PuntuacionVino $puntuacionVino, bool $flush = false): void
     {
-        $puntuaciones = $this->findBy([], [$campo=> 'DESC']);
-        if (empty($puntuaciones)) {
-            return null;
-        }
-        $json = array('info' => array('count'=>count($puntuaciones)), 
-        'results' => array());
-        foreach ($puntuaciones as $puntuacion) {
-            $json['results'][] = $this->puntuacionJSON($puntuacion);
-        }
-        return $json;
-    }
-
-    public function findAllByVino(Vino $vino): mixed
-    {
-        $puntuaciones = $this->findBy(["vino" => $vino]);
-        if (empty($puntuaciones)) {
-            return null;
-        }
-        $json = array();
-        foreach ($puntuaciones as $puntuacion) {
-            $json[] = $this->puntuacionJSON($puntuacion);
-        }
-        return $json;
-    }
-
-    public function new(Vino $vino, Puntuacion $puntuacion, ?string $comentarios, ?string $usuario, bool $flush): bool
-    {
-        try {
-            $puntuacionVino = new PuntuacionVino();
-            $puntuacionVino->setVino($vino);
-            $puntuacionVino->setPuntuacion($puntuacion);
-            $puntos=$vino->getPuntos();
-            $vino->setPuntos($puntos+$puntuacion->getPuntos());
-            if (!is_null($comentarios)) $puntuacionVino->setComentarios($comentarios);
-            if (!is_null($usuario)) $puntuacionVino->setUsuario($usuario);
-            return ($this->save($puntuacionVino, $flush));
-        } catch (\Exception $e) {
-            throw $e;
+        $this->getEntityManager()->persist($puntuacionVino);
+        if ($flush) {
+            $this->getEntityManager()->flush();
         }
     }
 
-    public function save(PuntuacionVino $puntuacionVino, bool $flush = false): bool
+    public function remove(PuntuacionVino $puntuacionVino, bool $flush = false): void
     {
-        try {
-            $this->getEntityManager()->persist($puntuacionVino);
-            if ($flush) {
-                $this->getEntityManager()->flush();
-            }
-            return ($flush);
-        } catch (\Exception $e) {
-            throw $e;
+        $this->getEntityManager()->remove($puntuacionVino);
+        if ($flush) {
+            $this->getEntityManager()->flush();
         }
     }
 
-    public function remove(PuntuacionVino $puntuacionVino, bool $flush = false):bool
-    {
-        try {
-            $this->getEntityManager()->remove($puntuacionVino);
-            if ($flush) {
-                $this->getEntityManager()->flush();
-            }
-            return $flush;
-        } catch (\Exception $e) {
-            throw $e;
-        }
-    }
-
-    public function puntuacionJson(PuntuacionVino $puntuacion): mixed
-    {
-        $json = array(
-            'id' => $puntuacion->getId(),
-            'vino' => $puntuacion->getVino()->getNombre(),
-            'puntuacion' => $puntuacion->getPuntuacion()->getPuntos(),
-            'descripcion' => $puntuacion->getPuntuacion()->getDescripcion(),
-            'comentarios' => $puntuacion->getComentarios(),
-            'usuario' => $puntuacion->getUsuario()
-        );
-
-        return $json;
-    }
-
-    public function requiredFields(Object $data): bool
-    {
-        return (isset($data->vino) && !empty($data->vino) && isset($data->puntuacion) && !empty($data->puntuacion));
-    }
 
     //    /**
     //     * @return PuntuacionVino[] Returns an array of PuntuacionVino objects
