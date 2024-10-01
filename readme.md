@@ -1,3 +1,18 @@
+[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com) 
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org) 
+[![PHP](https://img.shields.io/badge/PHP-777BB4?style=flat&logo=php&logoColor=white)](https://www.php.net) 
+[![JSON](https://img.shields.io/badge/JSON-000000?style=flat&logo=json&logoColor=white)](https://www.json.org/json-es.html) 
+[![Symfony](https://img.shields.io/badge/Symfony-333333?style=flat&logo=symfony&logoColor=white)](https://symfony.com) 
+[![Doctrine](https://img.shields.io/badge/Doctrine-3C873A?style=flat&logo=doctrine&logoColor=white)](https://www.doctrine-project.org) 
+[![Composer](https://img.shields.io/badge/Composer-885630?style=flat&logo=composer&logoColor=white)](https://getcomposer.org) 
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com) 
+[![Git](https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white)](https://git-scm.com) 
+[![MVC](https://img.shields.io/badge/MVC-007396?style=flat&logo=java&logoColor=white)](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) 
+[![API RESTful](https://img.shields.io/badge/API%20RESTful-007396?style=flat&logo=api&logoColor=white)](https://restfulapi.net) 
+[![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat&logo=swagger&logoColor=white)](https://swagger.io) 
+[![Open API](https://img.shields.io/badge/Open%20API-85EA2D?style=flat&logo=swagger&logoColor=white)](https://www.openapis.org) 
+[![Postman](https://img.shields.io/badge/Postman-FF6C37?style=flat&logo=postman&logoColor=white)](https://www.postman.com) 
+[![Visual Studio Code](https://img.shields.io/badge/Visual%20Studio%20Code-007ACC?style=flat&logo=visual-studio-code&logoColor=white)](https://code.visualstudio.com) 
 # Divino - Wine Management Application
 
 ## Description
